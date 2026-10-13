@@ -1,0 +1,105 @@
+---
+title: "Outliers & Sensitivity Analysis"
+subtitle: "Evaluating the influence of inflation and other extremes on 2019 economic distance"
+---
+
+```{r setup, include=FALSE}
+source("R_analysis.R")
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(knitr)
+```
+
+## Research purpose
+
+The baseline economic-distance index uses 2019 GDP per capita (constant 2015 US dollars), GDP-deflator inflation (annual percentage change), and imports and exports as shares of GDP. This diagnostic compares the baseline Mahalanobis distances with a specification that caps each variable at its 1st and 99th percentiles. **This is a sensitivity test, not a replacement estimate or an official SDG indicator.**
+
+## Sample and variable checks
+
+```{r}
+cat("Complete-case economies, including US:", nrow(complete_data), "\n")
+cat("Comparison economies, excluding US:", nrow(complete_data) - 1, "\n")
+kable(missingness, caption="Missing data after classification of country/economy codes")
+```
+
+Review `outputs/excluded_aggregates.csv` and `outputs/excluded_incomplete_economies.csv` before describing the sample as sovereign countries. The source may include economies and territories.
+
+## Identifying extreme observations
+
+```{r}
+for (v in indicators) {
+  cat("\n###", v, "\n\n")
+  print(kable(complete_data %>% arrange(desc(.data[[v]])) %>%
+       select(country, iso3c, all_of(v)) %>% head(5), digits=2))
+}
+```
+
+```{r fig-width=10, fig-height=7}
+long <- complete_data %>% select(country, all_of(indicators)) %>%
+  pivot_longer(all_of(indicators),names_to="indicator", values_to="value")
+ggplot(long, aes(x=value)) + geom_histogram(bins=35, fill="#197654", color="white") +
+ facet_wrap(~indicator, scales="free", ncol=2) +
+ labs(title="Untransformed 2019 indicator distributions", x="Value", y="Economies") +
+ theme_minimal(base_size=12)
+```
+
+## Winsorized sensitivity specification
+
+Let $X$ be the complete-case matrix, $S$ its sample covariance matrix and $x_{US}$ the US indicator vector. The baseline index is $D_i = \sqrt{(x_i-x_{US})' S^{-1} (x_i-x_{US})}$. Winsorization caps each variable separately at sample quantiles 0.01 and 0.99, and then **re-estimates the covariance matrix from the capped data**. The US vector is capped consistently, if necessary. A change in distance therefore reflects both changed observations and changed covariance scaling.
+
+```{r}
+X <- as.matrix(complete_data[indicators])
+stopifnot(all(is.finite(X)))
+lo <- apply(X, 2, quantile, probs=.01)
+hi <- apply(X, 2, quantile, probs=.99)
+Xcap <- sweep(sweep(X, 2, lo, pmax), 2, hi, pmin)
+S_cap <- cov(Xcap)
+stopifnot(qr(S_cap)$rank == ncol(S_cap))
+US_cap <- as.numeric(Xcap[complete_data$iso3c == "USA",])
+sensitivity <- complete_data %>% select(country, iso3c, distance_us) %>%
+ mutate(distance_winsor = sqrt(mahalanobis(Xcap, center=US_cap,cov=S_cap)),
+        baseline_rank=rank(distance_us, ties.method="min"),
+        winsor_rank=rank(distance_winsor,ties.method="min")) %>%
+ filter(iso3c != "USA") %>%
+ mutate(baseline_rank=rank(distance_us,ties.method="min"),
+        winsor_rank=rank(distance_winsor,ties.method="min"),
+        rank_shift=winsor_rank-baseline_rank)
+readr::write_csv(sensitivity, "outputs/sensitivity_rankings.csv")
+cutoffs <- data.frame(indicator=indicators, lower_1pct=as.numeric(lo),upper_99pct=as.numeric(hi))
+kable(cutoffs, digits=2, caption="Variable-specific winsorization boundaries")
+```
+
+## Which country rankings remain stable?
+
+```{r}
+closest_baseline <- sensitivity %>% arrange(distance_us) %>% head(10)
+furthest_baseline <- sensitivity %>% arrange(desc(distance_us)) %>% head(10)
+closest_adjusted <- sensitivity %>% arrange(distance_winsor) %>% head(10)
+furthest_adjusted <- sensitivity %>% arrange(desc(distance_winsor)) %>% head(10)
+kable(closest_baseline %>% select(country, distance_us, distance_winsor, baseline_rank, winsor_rank),digits=3,
+ caption="Ten nearest economies under baseline measurement")
+kable(furthest_baseline %>% select(country, distance_us, distance_winsor, baseline_rank, winsor_rank),digits=3,
+ caption="Ten most distant economies under baseline measurement")
+cat("Nearest top-ten overlap:", length(intersect(closest_baseline$iso3c, closest_adjusted$iso3c)), "/ 10\n\n")
+cat("Furthest top-ten overlap:",length(intersect(furthest_baseline$iso3c,furthest_adjusted$iso3c)),"/ 10\n")
+```
+
+```{r fig-width=9, fig-height=6}
+sensitivity %>% arrange(desc(abs(rank_shift))) %>% head(18) %>%
+ ggplot(aes(x=reorder(country,rank_shift), y=rank_shift)) +
+ geom_col(fill="#275da8") + coord_flip() +
+ labs(title="Largest rank changes under 1–99% winsorization", x=NULL, y="Adjusted rank minus baseline rank") + theme_minimal(base_size=12)
+```
+
+## Interpretive cautions
+
+1. **High inflation distorts comparisons.** Venezuela and Zimbabwe illustrate why the influence of extreme observations should be assessed, not simply hidden or removed.
+2. **Similarity is not quality.** Low economic distance to the US does not imply better governance, higher welfare, or suitability for investment.
+3. **Indicator selection matters.** This four-variable index is an adaptation motivated by the original assignment. It is not claimed to be a precise reproduction of the complete Berry, Guillén and Zhou (2010) index.
+4. **Cross-section only.** Data for 2019 cannot establish trends or evaluate progress toward SDG Target 17.11.
+5. **Coverage matters.** A data-complete economy sample may overrepresent countries with robust statistics. Review the exclusions and add official SDG export-share indicators before claims about Target 17.11.
+
+## Next empirical checks
+
+The next analyses should compare log-transformed GDP per capita, a robust alternative to the conventional sample covariance matrix, and the sensitivity of rankings to excluding the extraordinary inflation observation(s). Each alternative should be labeled separately to avoid treating exploratory estimates as a single definitive ranking.

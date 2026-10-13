@@ -1,0 +1,193 @@
+---
+title: "Exploratory Data Analysis"
+subtitle: "2019 economic indicators · sample diagnostics, distributions and relationships"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+execute:
+  warning: false
+  message: false
+---
+
+This analysis examines the **2019 World Development Indicators** before interpreting economic distance. All tables and graphics are generated from the supplied workbook; no statistics are hardcoded. The country sample is based on the classification and complete-case criteria documented in [Data & Methodology](methods.qmd).
+
+```{r}
+#| label: eda-load
+source('R_analysis.R')
+library(scales)
+library(tibble)
+pretty_names <- c(gdp_per_capita = 'GDP per capita (2015 US$)',
+                  inflation = 'Inflation, GDP deflator (%)',
+                  imports_pct_gdp = 'Imports (% of GDP)',
+                  exports_pct_gdp = 'Exports (% of GDP)')
+```
+
+## 1. Sample coverage and missing data
+
+The number of rows in the workbook is **not** the number of economies: each country is recorded once per indicator. The chart below begins with valid country/economy identifiers, separates excluded codes, and reports the count of complete records used in the distance analysis.
+
+```{r}
+#| label: eda-sample-audit
+#| tbl-cap: "Country sample audit (2019)"
+sample_audit <- tibble(stage = c('Distinct country/economy codes in WDI export',
+                                 'Codes recognized as individual economies',
+                                 'Complete on all four indicators',
+                                 'Incomplete economies excluded',
+                                 'Aggregate or unrecognized codes excluded'),
+                       n = c(nrow(wide), nrow(country_data), nrow(complete_data),
+                             nrow(excluded_incomplete), nrow(excluded_aggregates)))
+knitr::kable(sample_audit)
+```
+
+```{r}
+#| label: eda-missing
+#| fig-cap: "Missing observations by indicator, before complete-case filtering"
+missing_plot <- missingness %>%
+  mutate(indicator = factor(indicator, levels = rev(indicators),
+                            labels = rev(unname(pretty_names)))) %>%
+  pivot_longer(c(available_n, missing_n), names_to = 'status', values_to = 'n') %>%
+  mutate(status = recode(status, available_n = 'Available', missing_n = 'Missing'))
+ggplot(missing_plot, aes(indicator, n, fill = status)) +
+  geom_col() + coord_flip() +
+  scale_fill_manual(values = c(Available = '#247c62', Missing = '#cf835c')) +
+  labs(x = NULL, y = 'Number of economies', fill = NULL) +
+  theme_minimal(base_size = 12)
+```
+
+```{r}
+#| label: eda-missing-patterns
+#| tbl-cap: "Observed patterns of missingness (0 means observed, 1 means missing)"
+pattern_table <- country_data %>%
+  mutate(across(all_of(indicators), ~as.integer(!is.finite(.x)))) %>%
+  count(across(all_of(indicators)), name = 'economies', sort = TRUE)
+knitr::kable(pattern_table)
+```
+
+**Audit interpretation:** Missingness is not necessarily random. Dropping incomplete countries can disproportionately remove countries with weaker statistical coverage, so the retained sample should not be described as representative of every country. Check `outputs/excluded_incomplete_economies.csv` and `outputs/excluded_aggregates.csv` before publication.
+
+## 2. Descriptive statistics in original units
+
+```{r}
+#| label: eda-descriptives
+#| tbl-cap: "Summary statistics; complete-case economies only"
+summary_stats %>% mutate(indicator = unname(pretty_names[indicator])) %>%
+  knitr::kable(digits = 2)
+```
+
+```{r}
+#| label: eda-histograms
+#| fig-height: 8
+#| fig-cap: "Indicator distributions; free axes reflect different original units"
+long_complete <- complete_data %>%
+  select(country, all_of(indicators)) %>%
+  pivot_longer(all_of(indicators), names_to = 'indicator', values_to = 'value') %>%
+  mutate(indicator = factor(indicator, levels = indicators,
+                            labels = unname(pretty_names)))
+ggplot(long_complete, aes(value)) +
+  geom_histogram(bins = 28, fill = '#246b78', color = 'white') +
+  facet_wrap(~indicator, scales = 'free', ncol = 2) +
+  labs(x = 'Indicator value (original units)', y = 'Economies') +
+  theme_minimal(base_size = 12)
+```
+
+```{r}
+#| label: eda-boxplots
+#| fig-height: 8
+#| fig-cap: "Boxplots reveal potential extreme observations; panels have independent scales"
+ggplot(long_complete, aes(x = '', y = value)) +
+  geom_boxplot(fill = '#d0e1d8', color = '#267052', outlier.colour = '#b45c3c') +
+  facet_wrap(~indicator, scales = 'free_y', ncol = 2) +
+  labs(x = NULL, y = 'Indicator value') +
+  theme_minimal(base_size = 12)
+```
+
+### Economies at each observed extreme
+
+```{r}
+#| label: eda-extremes
+#| tbl-cap: "Minimum and maximum values of each indicator in the complete sample"
+extremes <- bind_rows(lapply(indicators, function(v) {
+  tibble(indicator = unname(pretty_names[v]),
+         minimum_economy = complete_data$country[which.min(complete_data[[v]])],
+         minimum_value = min(complete_data[[v]]),
+         maximum_economy = complete_data$country[which.max(complete_data[[v]])],
+         maximum_value = max(complete_data[[v]]))
+}))
+knitr::kable(extremes, digits = 2)
+```
+
+**What to interpret:** Compare each median with its mean. Large gaps signal asymmetry, especially when the accompanying boxplot shows extreme observations. Negative GDP-deflator inflation is possible; it indicates a fall in the GDP price deflator rather than necessarily a fall in consumer prices. High exports or imports as a share of GDP may occur in trade-intensive economies and are not necessarily data errors.
+
+## 3. Correlations and relationships
+
+```{r}
+#| label: eda-correlations
+#| tbl-cap: "Pearson correlations among indicators"
+knitr::kable(round(correlation, 3))
+```
+
+```{r}
+#| label: eda-heatmap
+#| fig-height: 6
+#| fig-cap: "Correlation heatmap; correlations are descriptive, not causal"
+heatmap_data <- as.data.frame(as.table(correlation)) %>%
+  mutate(Var1 = factor(Var1, levels = indicators,
+                       labels = unname(pretty_names)),
+         Var2 = factor(Var2, levels = indicators,
+                       labels = unname(pretty_names)))
+ggplot(heatmap_data, aes(Var1, Var2, fill = Freq)) +
+  geom_tile(color = 'white', linewidth = 1) +
+  geom_text(aes(label = sprintf('%.2f', Freq)), size = 3.5) +
+  scale_fill_gradient2(low = '#a44c54', mid = 'white', high = '#216f57', midpoint = 0,
+                       limits = c(-1, 1)) +
+  coord_equal() + labs(x = NULL, y = NULL, fill = 'Pearson r') +
+  theme_minimal(base_size = 10) +
+  theme(axis.text.x = element_text(angle = 35, hjust = 1))
+```
+
+```{r}
+#| label: eda-trade-scatter
+#| fig-cap: "Exports versus imports as percentages of GDP"
+ggplot(complete_data, aes(imports_pct_gdp, exports_pct_gdp)) +
+  geom_point(alpha = .65, color = '#286e7c') +
+  geom_smooth(method = 'lm', se = FALSE, color = '#be8042', linewidth = .8) +
+  labs(x = 'Imports (% GDP)', y = 'Exports (% GDP)') +
+  theme_minimal(base_size = 12)
+```
+
+The export-import relationship warrants special attention: both indicators capture aspects of trade integration. Mahalanobis distance accounts for their correlation, rather than treating them as independent dimensions. **Correlation does not demonstrate that one causes the other.**
+
+## 4. Economic distance: diagnostic view
+
+```{r}
+#| label: eda-distance-distribution
+#| fig-cap: "Distribution of Mahalanobis distances from the USA; USA excluded"
+ggplot(ranked, aes(distance_us)) +
+  geom_histogram(bins = 30, fill = '#5650a5', color = 'white') +
+  labs(x = 'Mahalanobis distance (square-root scale)', y = 'Economies') +
+  theme_minimal(base_size = 12)
+```
+
+```{r}
+#| label: eda-distance-top
+#| tbl-cap: "Five nearest and five farthest economies (computed from the data)"
+rank_display <- bind_rows(head(ranked, 5) %>% mutate(group = 'Nearest'),
+                          tail(ranked, 5) %>% arrange(desc(distance_us)) %>%
+                            mutate(group = 'Farthest')) %>%
+  select(group, country, distance_us)
+knitr::kable(rank_display, digits = 3)
+```
+
+**Interpretation boundary:** A large score means greater multivariate difference from the USA on the **four selected indicators**, not greater poverty, weaker institutions, lower SDG achievement, or higher investment risk. The USA itself is not included in this ranking. The covariance sample and extreme observations can influence the scores.
+
+## 5. Questions emerging for ISS Presentation 1
+
+1. How much does complete-case filtering change which economies are represented?
+2. Which indicators show substantial dispersion or a few particularly unusual observations?
+3. Are imports and exports strongly correlated, and what does that imply for a multivariate distance measure?
+4. How stable are the nearest/farthest rankings if highly unusual inflation observations are removed, or if GDP per capita is log-transformed? These are **sensitivity analyses for a later stage**, not findings from this page.
+
+## Reproducibility
+
+The dataset remains unchanged at `data/WDI_Raw_2019.xlsx`. The shared analysis script exports data-cleaning decisions and numerical results to `outputs/`. This page uses the same cleaned observations and covariance definition as [the primary research report](index.qmd).
