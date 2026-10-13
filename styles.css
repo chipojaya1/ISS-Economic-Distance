@@ -1,2 +1,7 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
-:root{--ink:#1b1d20;--green:#197654;--paper:#f4f6f5}body{font-family:Inter,sans-serif;color:var(--ink);line-height:1.65}h1,h2,h3,.navbar-brand{font-family:'Space Grotesk',sans-serif;letter-spacing:-.02em}h1.title{font-size:clamp(2.6rem,5vw,4rem);font-weight:700}.subtitle{font-size:1.24rem;color:#525f64}.quarto-title-block{padding:1.6rem 0 1.1rem;border-bottom:3px solid var(--green);margin-bottom:2rem}h2{border-bottom:1px solid #dde3df;padding-bottom:.55rem;margin-top:2.8rem}.callout{border-radius:4px}.cell-output-display{margin:1.2rem 0 2rem}table{font-size:.9rem}.navbar{font-family:'Space Grotesk',sans-serif}.sidebar nav[role=doc-toc] a.active{border-left-color:var(--green);color:var(--green)}blockquote{background:var(--paper);border-left:3px solid var(--green);padding:18px 22px}.project-intro{background:var(--paper);border-left:4px solid var(--green);padding:20px 25px;font-size:1.12rem}
+:root { --bs-primary: #216a52; --bs-link-color: #216a52; --bs-link-hover-color: #164932; }
+.navbar { background: #1b2225; }
+h1,h2,h3 { letter-spacing: -.025em; }
+h1 { font-weight: 750; }
+h2 { border-bottom: 1px solid #e1e5e3; padding-bottom: .35rem; margin-top: 2rem; }
+.quarto-title-banner { background: #eff4f0; color: #192524; }
+.table { font-size: .89rem; }

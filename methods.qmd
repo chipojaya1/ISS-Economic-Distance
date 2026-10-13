@@ -1,45 +1,52 @@
 ---
 title: "Data & Methodology"
-subtitle: "Indicator definitions, cleaning decisions, and replicability"
+subtitle: "Definitions, cleaning decisions, and reproducibility"
+format:
+  html:
+    toc: true
 ---
 
-## Original data
+## Data source
 
-The file `data/WDI_Raw.xlsx` is the provided World Bank WDI export, with a `Data` worksheet and a `Series - Metadata` worksheet. The analysis uses the 2019 entries for these exact indicators:
+The **2019 World Development Indicators** Excel export is retained unchanged as `data/WDI_Raw_2019.xlsx`. Its `Data` tab is in *long format*, with one country-indicator combination per row. `R_analysis.R` reshapes it to one economy per row. Unlike the earlier workbook, the updated export uses **GDP per capita**, not aggregate GDP.
 
-| WDI series code | Original definition | Name in R |
+| WDI series code | Measurement | R column |
 |---|---|---|
-| `NY.GDP.MKTP.KD` | GDP (constant 2015 US$) | `gdp_constant_2015_usd` |
-| `NE.IMP.GNFS.ZS` | Imports of goods and services (% of GDP) | `imports_pct_gdp` |
-| `NY.GDP.DEFL.KD.ZG` | Inflation, GDP deflator (annual %) | `inflation_gdp_deflator_pct` |
-| `NE.EXP.GNFS.ZS` | Exports of goods and services (% of GDP) | `exports_pct_gdp` |
+| `NY.GDP.PCAP.KD` | GDP per capita (constant 2015 US$) | `gdp_per_capita` |
+| `NY.GDP.DEFL.KD.ZG` | Inflation, GDP deflator (annual %) | `inflation` |
+| `NE.IMP.GNFS.ZS` | Imports of goods and services (% GDP) | `imports_pct_gdp` |
+| `NE.EXP.GNFS.ZS` | Exports of goods and services (% GDP) | `exports_pct_gdp` |
 
-**Important:** The first indicator is aggregate GDP, not GDP per capita. The inflation rate is the *GDP-deflator* measure, not necessarily consumer-price inflation.
+**Distinctions:** GDP-deflator inflation is not CPI inflation. Exports and imports are expressed relative to GDP. GDP per capita is not a measure of aggregate economic size.
 
-## Cleaning and computation
+## Data-cleaning workflow
 
-1. Read the original Excel file without modifying it.
-2. Convert four economic indicators to numeric; mark unavailable entries as missing.
-3. Remove World Bank regional/income aggregates using ISO3 country-code recognition.
-4. Restrict to complete observations for all four variables.
-5. Check that the United States appears exactly once.
-6. Compute descriptive statistics and the correlation matrix.
-7. Compute covariance-adjusted Mahalanobis distances between every country and the USA; rank **other countries only**.
+1. Read the original Excel export without changing the original file; interpret `..` as missing.
+2. Filter out footer/metadata rows with no valid Series Code *before* using `pivot_wider()`; this prevents unexpected `NA` and list columns.
+3. Verify there are no repeated `(country code, series code)` pairs. If there are any, stop and inspect rather than arbitrarily averaging.
+4. Reshape to wide format and confirm all indicator columns are numeric.
+5. Use `countrycode` to identify individual country/economy codes; export exclusions for review. Country recognition is imperfect and exclusions should be checked manually.
+6. Describe missing observations and retain a common complete-case sample for all four variables. Keep the USA as the reference observation.
+7. Calculate raw-unit descriptive statistics, Pearson correlations, and Mahalanobis distances using a covariance matrix from that same complete-case sample. Exclude USA from the comparison ranking, not from covariance estimation.
+8. Export audit tables, a clean dataset, and ranked distances under `outputs/`.
 
-The script `R_analysis.R` implements these steps. The exact retained sample may differ from the older Stata study depending on aggregate exclusions and missing data; see the generated overview instead of assuming the originally reported sample size.
+## Distance computation
 
-## Replication
+$$D(i,US)=\sqrt{(x_i-x_{US})^{\mathsf{T}}S^{-1}(x_i-x_{US})}.$$
 
-Install R and [Quarto](https://quarto.org/), open the project directory, and run:
+R's `stats::mahalanobis()` returns the **squared** distance, so the script takes the square root. Since covariance is sample-dependent, country inclusion and extreme observations can affect rankings. The indicators capture selected *economic* differences, not broader political, legal or cultural institutions.
 
-```bash
-Rscript -e 'install.packages(c("readxl","dplyr","ggplot2","countrycode","knitr"), repos="https://cloud.r-project.org")'
-quarto render
-quarto preview
+## Running locally
+
+Place `index.qmd`, `methods.qmd`, `R_analysis.R`, and the `data/` folder together. Open that directory as the RStudio/Quarto project working directory. Install packages once in the RStudio Console:
+
+```r
+install.packages(c('readxl', 'dplyr', 'tidyr', 'ggplot2',
+                   'knitr', 'countrycode', 'readr', 'tibble', 'scales'))
 ```
 
-The generated website is in `_site/`. Quarto can publish it using GitHub Pages from a **public** repository (or through another free compatible host). Do not upload private datasets or sensitive material to a public repository.
+Then render `index.qmd`. The script uses *project-relative paths* rather than a hardcoded username or machine-specific desktop path. The `outputs/` folder is populated when the analysis runs.
 
-## Provenance
+## Reproducibility and limitations
 
-This is a Quarto/R reanalysis of the original empirical class project by **Chipo Jaya and Xianghan Zhu**, adapted as an ISS Data Analytics Project. The original report is reference material, not a source of hard-coded results. All tables and charts in the main page are computed from the included WDI workbook at render time.
+The downloaded WDI extract is a 2019 snapshot of economic indicators, but World Bank historical series can be revised. A downloadable export is preserved to replicate the results. The cleaned sample and rankings should be verified after rendering. An expansion decision requires additional business evidence beyond this distance index.
