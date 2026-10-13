@@ -1,29 +1,22 @@
-# The Geography of Economic Distance
+# The Geography of Economic Distance — ISS Data Analytics Project 1
 
-**ISS Data Analytics Project 1** | **2019 World Development Indicators** | **R + Quarto**
+Reproducible 2019 cross-country economic-distance analysis in **R + Quarto**, adapted from the original empirical project by **Chipo Jaya and Xianghan Zhu**.
 
-A reproducible analysis of economic differences between the United States and other economies, based on GDP per capita, GDP-deflator inflation, imports (% of GDP), and exports (% of GDP).
+## Run
+1. Install R and Quarto.
+2. In this folder, run:
+   ```bash
+   Rscript -e 'install.packages(c("readxl","dplyr","ggplot2","countrycode","knitr"), repos="https://cloud.r-project.org")'
+   quarto render
+   quarto preview
+   ```
+3. Upload the project to a **new public GitHub repository** only after reviewing the data and content. Publish the generated site with a suitable free GitHub Pages workflow.
 
-This research adapts an earlier collaborative empirical project by **Chipo Jaya and Xianghan Zhu**, based on the institutional-distance framework discussed by Berry, Guillén, and Zhou (2010). The ISS adaptation examines economic disparity, data coverage, outliers, and sensitivity of Mahalanobis distances. Economic distance is not a direct measure of SDG achievement or investment attractiveness.
+The supplied workbook is located in `data/WDI_Raw.xlsx`. No values from the original report are hard-coded into the charts or ranking tables. See `methods.qmd` for variable definitions and limitations.
 
-## Run locally
-
-Install [R](https://cran.r-project.org/) and [Quarto](https://quarto.org/). From the project root:
-
-```r
-install.packages(c("readxl", "dplyr", "tidyr", "ggplot2", "knitr",
-                   "countrycode", "readr", "scales", "tibble"))
-```
-
-```bash
-quarto render
-```
-
-The Quarto site builds from `index.qmd`, `eda.qmd`, `sensitivity.qmd` and `methods.qmd`, using `R_analysis.R` and `data/WDI_Raw_2019.xlsx`.
-
-**Status:** Project files still need to be uploaded from the prepared ZIP archive. Website generation is not yet verified.
-
-## Data and credit
-
-- World Bank [World Development Indicators](https://databank.worldbank.org/source/world-development-indicators), 2019.
-- Berry, H., Guillén, M. F., & Zhou, N. (2010). *An institutional approach to cross-national distance*. Journal of International Business Studies, 41, 1460–1480.
+## Check before presentation
+- Compare computed sample size and ranking to the original Stata report.
+- Resolve GDP vs GDP-per-capita choice. Current code intentionally uses exact uploaded columns.
+- Inspect whether `countrycode` excludes any valid country code you want to retain.
+- Confirm coauthor acknowledgement and public-data licensing before publication.
+- Verify the generated report on a local machine; R/Quarto were not available in the authoring environment.

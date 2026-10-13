@@ -1,0 +1,45 @@
+---
+title: "Data & Methodology"
+subtitle: "Indicator definitions, cleaning decisions, and replicability"
+---
+
+## Original data
+
+The file `data/WDI_Raw.xlsx` is the provided World Bank WDI export, with a `Data` worksheet and a `Series - Metadata` worksheet. The analysis uses the 2019 entries for these exact indicators:
+
+| WDI series code | Original definition | Name in R |
+|---|---|---|
+| `NY.GDP.MKTP.KD` | GDP (constant 2015 US$) | `gdp_constant_2015_usd` |
+| `NE.IMP.GNFS.ZS` | Imports of goods and services (% of GDP) | `imports_pct_gdp` |
+| `NY.GDP.DEFL.KD.ZG` | Inflation, GDP deflator (annual %) | `inflation_gdp_deflator_pct` |
+| `NE.EXP.GNFS.ZS` | Exports of goods and services (% of GDP) | `exports_pct_gdp` |
+
+**Important:** The first indicator is aggregate GDP, not GDP per capita. The inflation rate is the *GDP-deflator* measure, not necessarily consumer-price inflation.
+
+## Cleaning and computation
+
+1. Read the original Excel file without modifying it.
+2. Convert four economic indicators to numeric; mark unavailable entries as missing.
+3. Remove World Bank regional/income aggregates using ISO3 country-code recognition.
+4. Restrict to complete observations for all four variables.
+5. Check that the United States appears exactly once.
+6. Compute descriptive statistics and the correlation matrix.
+7. Compute covariance-adjusted Mahalanobis distances between every country and the USA; rank **other countries only**.
+
+The script `R_analysis.R` implements these steps. The exact retained sample may differ from the older Stata study depending on aggregate exclusions and missing data; see the generated overview instead of assuming the originally reported sample size.
+
+## Replication
+
+Install R and [Quarto](https://quarto.org/), open the project directory, and run:
+
+```bash
+Rscript -e 'install.packages(c("readxl","dplyr","ggplot2","countrycode","knitr"), repos="https://cloud.r-project.org")'
+quarto render
+quarto preview
+```
+
+The generated website is in `_site/`. Quarto can publish it using GitHub Pages from a **public** repository (or through another free compatible host). Do not upload private datasets or sensitive material to a public repository.
+
+## Provenance
+
+This is a Quarto/R reanalysis of the original empirical class project by **Chipo Jaya and Xianghan Zhu**, adapted as an ISS Data Analytics Project. The original report is reference material, not a source of hard-coded results. All tables and charts in the main page are computed from the included WDI workbook at render time.

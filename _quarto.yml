@@ -1,0 +1,35 @@
+project:
+  type: website
+  output-dir: _site
+
+website:
+  title: "The Geography of Economic Distance"
+  navbar:
+    background: "#191c20"
+    foreground: light
+    left:
+      - href: index.qmd
+        text: Research
+      - href: methods.qmd
+        text: Data & methodology
+    right:
+      - text: World Bank Data
+        href: https://databank.worldbank.org/source/world-development-indicators
+  page-footer: "ISS Data Analytics Project 1 · Reproducible R + Quarto research"
+
+format:
+  html:
+    theme: cosmo
+    css: styles.css
+    toc: true
+    code-fold: true
+    code-summary: "Show R code"
+    smooth-scroll: true
+    fig-width: 9
+    fig-height: 5
+    self-contained: false
+
+execute:
+  echo: false
+  warning: false
+  message: false
