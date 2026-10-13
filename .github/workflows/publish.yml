@@ -33,7 +33,7 @@ jobs:
           use-public-rspm: true
       - name: Install R packages
         run: |
-          Rscript -e 'install.packages(c("readxl","dplyr","tidyr","ggplot2","knitr","countrycode","readr","scales","tibble"), repos="https://cloud.r-project.org")'
+          Rscript -e 'install.packages(c("readxl","dplyr","tidyr","ggplot2","knitr","rmarkdown","countrycode","readr","scales","tibble"), repos="https://cloud.r-project.org")'
       - uses: quarto-dev/quarto-actions/setup@v2
       - name: Render Quarto site
         run: quarto render
