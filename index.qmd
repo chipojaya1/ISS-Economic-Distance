@@ -15,7 +15,7 @@ execute:
 
 ::: {.callout-note}
 ## ISS Data Analytics Project 1
-This Python analysis adapts an original collaborative empirical project by **Chipo Jaya and Xianghan Zhu**. It provides context for SDG 17 but does **not** directly measure official Target 17.11.
+This single-page Python report follows the data preparation, variable definitions, descriptive analysis, correlation analysis, and Mahalanobis-distance workflow in [the updated Python notebook](https://github.com/chipojaya1/ISS-Economic-Distance/blob/main/Economic_distance_analysis.ipynb). The sensitivity analysis is a separate extension. The report adapts an original collaborative empirical project by **Chipo Jaya and Xianghan Zhu**. It provides context for SDG 17 but does **not** directly measure official Target 17.11.
 :::
 
 ## 1. Research question and data
@@ -37,8 +37,8 @@ sns.set_theme(style="whitegrid")
 raw = pd.read_excel("data/WDI_Raw_2019.xlsx", sheet_name="Data", na_values=["..", "."])
 mapping = {"NY.GDP.PCAP.KD":"gdp_per_capita",
            "NY.GDP.DEFL.KD.ZG":"inflation",
-           "NE.IMP.GNFS.ZS":"imports_pct_gdp",
-           "NE.EXP.GNFS.ZS":"exports_pct_gdp"}
+           "NE.IMP.GNFS.ZS":"imports",
+           "NE.EXP.GNFS.ZS":"exports"}
 features = list(mapping.values())
 data = raw.loc[raw["Series Code"].isin(mapping),
                ["Country Name","Country Code","Series Code","2019 [YR2019]"]].copy()
@@ -56,7 +56,7 @@ print(f"Source rows: {len(raw)}; economies: {len(wide)}; complete cases: {len(co
 
 ## 2. Sample coverage and missing data
 
-The data include World Bank geographic economies, some of which are not sovereign countries. We exclude records missing any of the four indicators for distance calculations.
+The data include World Bank geographic economies, some of which are not sovereign countries. The analysis follows the notebook's complete-case sample; it does not independently filter the sample to sovereign states. We exclude records missing any of the four indicators for distance calculations.
 
 ```{python}
 #| label: missingness
@@ -165,7 +165,7 @@ display(comparison.loc[comparison.rank_change.abs().sort_values(ascending=False)
 
 Differences across economies depend on indicator selection, missing-data exclusions, and statistical treatment of unusually large observations. This is a single-year descriptive analysis, not causal evidence. The original sample includes economies rather than only sovereign states. Results should not be used on their own to infer regulatory similarity or identify the best investment destination.
 
-**SDG relevance:** Exports and imports support a broader discussion of international trade and SDG 17. They are not a direct estimate of the official Target 17.11 indicator, developing countries' share of global exports.
+**Replication note:** The source notebook identifies GDP per capita as `gdp_per_capita` and the two trade indicators as `imports` and `exports`; these names are now used consistently in this report. The sensitivity check below is an additional analysis, not a result established by the source notebook.\n\n**SDG relevance:** Exports and imports support a broader discussion of international trade and SDG 17. They are not a direct estimate of the official Target 17.11 indicator, developing countries' share of global exports.
 
 ## Sources and research credit
 
