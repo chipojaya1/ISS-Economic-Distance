@@ -75,20 +75,68 @@ display(complete[features].describe().T[
     ["count","mean","50%","std","min","max"]].rename(columns={"50%":"median"}).round(2))
 ```
 
-The four indicators have different distributions. The GDP-per-capita axis is shown logarithmically **for visualization only**; baseline distance calculations use the untransformed values.
+We look at each measure separately to see how economies differ in 2019. Each chart shows the number of economies falling within a particular range. Taller bars mean more economies are in that range.
+
+### GDP per capita — economic output per person
 
 ```{python}
-#| label: distributions
-#| fig-cap: "Distributions of 2019 economic indicators (complete cases)."
-fig, axes = plt.subplots(2,2,figsize=(11,7))
-for ax,col in zip(axes.flat,features):
-    sns.histplot(complete[col],bins=28,ax=ax,color="#277c69")
-    ax.set_title(col.replace("_"," ").title())
-    ax.set_ylabel("Economies")
-    if col=="gdp_per_capita": ax.set_xscale("log")
+#| label: distribution-gdp
+#| fig-cap: "GDP per capita across economies in 2019 (constant 2015 US dollars)."
+fig, ax = plt.subplots(figsize=(10, 4.5))
+sns.histplot(complete["gdp_per_capita"], bins=28, ax=ax, color="#277c69")
+ax.set(xlabel="GDP per capita (constant 2015 US$)", ylabel="Number of economies")
+ax.set_xscale("log")
 fig.tight_layout()
 plt.show()
 ```
+
+Most economies are clustered toward the lower end of income per person, while a smaller number have much higher GDP per capita. This illustrates how uneven economic output per person was across the economies in the dataset. The horizontal scale is adjusted so both lower and higher values are easier to see; the actual data have not been changed.
+
+### Inflation — how quickly prices were changing
+
+```{python}
+#| label: distribution-inflation
+#| fig-cap: "GDP-deflator inflation across economies in 2019."
+fig, ax = plt.subplots(figsize=(10, 4.5))
+sns.histplot(complete["inflation"], bins=35, ax=ax, color="#277c69")
+ax.set(xlabel="Inflation, GDP deflator (annual %)", ylabel="Number of economies")
+fig.tight_layout()
+plt.show()
+```
+
+For most economies, inflation was relatively modest in 2019. A few had exceptionally high rates, making the full chart look stretched. This reminds us that the experience of rapid price increases was not shared equally. Here, inflation is measured using the GDP deflator, rather than a household shopping-basket price index.
+
+### Imports — goods and services bought from abroad
+
+```{python}
+#| label: distribution-imports
+#| fig-cap: "Imports of goods and services as a share of GDP in 2019."
+fig, ax = plt.subplots(figsize=(10, 4.5))
+sns.histplot(complete["imports"], bins=28, ax=ax, color="#277c69")
+ax.set(xlabel="Imports (% of GDP)", ylabel="Number of economies")
+fig.tight_layout()
+plt.show()
+```
+
+Some economies relied more heavily on goods and services purchased from other countries than others did. Many were grouped in the middle of the chart, while a smaller number had particularly large import shares. This measure describes the size of imports relative to the economy, not whether imports are good or bad.
+
+### Exports — goods and services sold abroad
+
+```{python}
+#| label: distribution-exports
+#| fig-cap: "Exports of goods and services as a share of GDP in 2019."
+fig, ax = plt.subplots(figsize=(10, 4.5))
+sns.histplot(complete["exports"], bins=28, ax=ax, color="#277c69")
+ax.set(xlabel="Exports (% of GDP)", ylabel="Number of economies")
+fig.tight_layout()
+plt.show()
+```
+
+Economies also differed in how much they sold to the rest of the world compared with the size of their own economies. Most had more moderate export shares, whereas a few stood out with especially high shares. High export shares can be common in economies that are deeply connected to international trade.
+
+### How the four measures relate to one another
+
+The charts above show each measure on its own. The next chart looks at whether economies with higher values on one measure also tend to have higher values on another.
 
 ```{python}
 #| label: correlations
@@ -165,7 +213,9 @@ display(comparison.loc[comparison.rank_change.abs().sort_values(ascending=False)
 
 Differences across economies depend on indicator selection, missing-data exclusions, and statistical treatment of unusually large observations. This is a single-year descriptive analysis, not causal evidence. The original sample includes economies rather than only sovereign states. Results should not be used on their own to infer regulatory similarity or identify the best investment destination.
 
-**Replication note:** The source notebook identifies GDP per capita as `gdp_per_capita` and the two trade indicators as `imports` and `exports`; these names are now used consistently in this report. The sensitivity check below is an additional analysis, not a result established by the source notebook.\n\n**SDG relevance:** Exports and imports support a broader discussion of international trade and SDG 17. They are not a direct estimate of the official Target 17.11 indicator, developing countries' share of global exports.
+**Replication note:** The source notebook identifies GDP per capita as `gdp_per_capita` and the two trade indicators as `imports` and `exports`; these names are now used consistently in this report. The sensitivity check below is an additional analysis, not a result established by the source notebook.
+
+**SDG relevance:** Exports and imports support a broader discussion of international trade and SDG 17. They are not a direct estimate of the official Target 17.11 indicator, developing countries' share of global exports.
 
 ## Sources and research credit
 
