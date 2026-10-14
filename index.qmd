@@ -85,12 +85,15 @@ We look at each measure separately to see how economies differ in 2019. Each cha
 fig, ax = plt.subplots(figsize=(10, 4.5))
 sns.histplot(complete["gdp_per_capita"], bins=28, ax=ax, color="#277c69")
 ax.set(xlabel="GDP per capita (constant 2015 US$)", ylabel="Number of economies")
-ax.set_xscale("log")
+from matplotlib.ticker import FuncFormatter, MultipleLocator
+ax.xaxis.set_major_locator(MultipleLocator(50000))
+ax.xaxis.set_major_formatter(FuncFormatter(lambda value, _: f"${value/1000:,.0f}k" if value else "$0"))
+ax.set_xlim(left=0)
 fig.tight_layout()
 plt.show()
 ```
 
-Most economies are clustered toward the lower end of income per person, while a smaller number have much higher GDP per capita. This illustrates how uneven economic output per person was across the economies in the dataset. The horizontal scale is adjusted so both lower and higher values are easier to see; the actual data have not been changed.
+Most economies are clustered toward the lower end of income per person, while a smaller number have much higher GDP per capita. This illustrates how uneven economic output per person was across the economies in the dataset. The horizontal axis shows actual dollar amounts, so the handful of very high values stretches the chart and makes the lower-income economies appear closer together.
 
 ### Inflation — how quickly prices were changing
 
