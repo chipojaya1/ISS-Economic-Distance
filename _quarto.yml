@@ -1,22 +1,12 @@
 project:
   type: website
   output-dir: _site
+  render:
+    - index.qmd
 website:
   title: "The Geography of Economic Distance"
-  navbar:
-    left:
-      - href: index.qmd
-        text: Research
-      - href: eda.qmd
-        text: Exploratory Analysis
-      - href: sensitivity.qmd
-        text: Sensitivity Analysis
-      - href: methods.qmd
-        text: Data & Methodology
 format:
   html:
     theme: cosmo
     toc: true
     css: styles.css
-execute:
-  freeze: false
