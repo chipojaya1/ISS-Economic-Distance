@@ -1,134 +1,176 @@
 ---
-title: "Empirical Project 1"
-subtitle: "Economic Distance from the United States (2019)"
+title: "The Geography of Economic Distance"
+subtitle: "A 2019 comparison of economic indicators relative to the United States"
 author: "Chipo Jaya"
 format:
   html:
     toc: true
-    toc-depth: 2
-    code-fold: show
-    theme: default
-    fig-width: 10
-    fig-height: 6
+    code-fold: true
+    code-summary: "Show Python code"
+jupyter: python3
 execute:
   warning: false
   message: false
 ---
 
-## Research question
+::: {.callout-note}
+## ISS Data Analytics Project 1
+This Python analysis adapts an original collaborative empirical project by **Chipo Jaya and Xianghan Zhu**. It provides context for SDG 17 but does **not** directly measure official Target 17.11.
+:::
 
-How economically distant was the United States from other economies in **2019**, as measured by GDP per capita, GDP-deflator inflation, imports and exports? This is an updated R/Quarto analysis of an earlier class project coauthored with Xianghan Zhu. The analysis measures dissimilarity, not overall market attractiveness.
+## 1. Research question and data
 
-## Q1. Data and preparation
+**How do income, inflation, and international trade contribute to economic distance between the United States and other economies in 2019?**
 
-```{r}
-#| label: load-analysis
-source('R_analysis.R')
+The data come from the [World Bank World Development Indicators](https://databank.worldbank.org/source/world-development-indicators). We use GDP per capita (constant 2015 US$), GDP-deflator inflation (annual %), imports (% GDP), and exports (% GDP).
+
+```{python}
+#| label: data-preparation
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from scipy.spatial.distance import mahalanobis
+from IPython.display import display
+
+sns.set_theme(style="whitegrid")
+raw = pd.read_excel("data/WDI_Raw_2019.xlsx", sheet_name="Data", na_values=["..", "."])
+mapping = {"NY.GDP.PCAP.KD":"gdp_per_capita",
+           "NY.GDP.DEFL.KD.ZG":"inflation",
+           "NE.IMP.GNFS.ZS":"imports_pct_gdp",
+           "NE.EXP.GNFS.ZS":"exports_pct_gdp"}
+features = list(mapping.values())
+data = raw.loc[raw["Series Code"].isin(mapping),
+               ["Country Name","Country Code","Series Code","2019 [YR2019]"]].copy()
+data["value"] = pd.to_numeric(data["2019 [YR2019]"], errors="coerce")
+if data.duplicated(["Country Code","Series Code"]).any():
+    raise ValueError("Duplicate country-indicator records: inspect source data.")
+wide = data.pivot(index=["Country Name","Country Code"],
+                  columns="Series Code",values="value").reset_index().rename(columns=mapping)
+wide.columns.name = None
+wide = wide.rename(columns={"Country Name":"country","Country Code":"iso3c"})
+complete = wide.dropna(subset=features).copy()
+assert (complete["iso3c"] == "USA").sum() == 1
+print(f"Source rows: {len(raw)}; economies: {len(wide)}; complete cases: {len(complete)}")
 ```
 
-The source is the World Bank's World Development Indicators export. We use **GDP per capita (constant 2015 US$; NY.GDP.PCAP.KD)**, not aggregate GDP, together with GDP-deflator inflation and imports/exports as percentages of GDP. See [Data & methodology](methods.qmd) for indicator definitions and decisions.
+## 2. Sample coverage and missing data
 
-```{r}
-#| label: tbl-audit
-#| tbl-cap: "2019 sample audit"
-audit <- data.frame(
-  stage = c('Country/economy codes in source', 'Recognized countries/economies',
-            'Complete observations', 'Incomplete observations removed',
-            'Excluded aggregate/unrecognized codes'),
-  count = c(nrow(wide), nrow(country_data), nrow(complete_data),
-            nrow(excluded_incomplete), nrow(excluded_aggregates))
-)
-knitr::kable(audit)
+The data include World Bank geographic economies, some of which are not sovereign countries. We exclude records missing any of the four indicators for distance calculations.
+
+```{python}
+#| label: missingness
+coverage = pd.DataFrame({
+  "Indicator": features,
+  "Available": [wide[col].notna().sum() for col in features],
+  "Missing": [wide[col].isna().sum() for col in features]})
+display(coverage)
 ```
 
-```{r}
-#| label: tbl-missing
-#| tbl-cap: "Available and missing values by indicator (individual economies before complete-case filtering)"
-knitr::kable(missingness)
+## 3. Exploratory data analysis
+
+```{python}
+#| label: descriptives
+display(complete[features].describe().T[
+    ["count","mean","50%","std","min","max"]].rename(columns={"50%":"median"}).round(2))
 ```
 
-## Q2. Descriptive statistics
+The four indicators have different distributions. The GDP-per-capita axis is shown logarithmically **for visualization only**; baseline distance calculations use the untransformed values.
 
-The following statistics are calculated on **one common complete-case sample**, using original units rather than standardized values. GDP per capita is in constant 2015 US dollars; all other indicators are in percentage units.
-
-```{r}
-#| label: tbl-descriptive
-#| tbl-cap: "Summary of 2019 economic indicators"
-knitr::kable(summary_stats, digits = 2)
+```{python}
+#| label: distributions
+#| fig-cap: "Distributions of 2019 economic indicators (complete cases)."
+fig, axes = plt.subplots(2,2,figsize=(11,7))
+for ax,col in zip(axes.flat,features):
+    sns.histplot(complete[col],bins=28,ax=ax,color="#277c69")
+    ax.set_title(col.replace("_"," ").title())
+    ax.set_ylabel("Economies")
+    if col=="gdp_per_capita": ax.set_xscale("log")
+fig.tight_layout()
+plt.show()
 ```
 
-```{r}
-#| label: fig-distributions
-#| fig-cap: "2019 distributions of four economic indicators (original units; scales differ)"
-#| fig-height: 8
-complete_data %>%
-  select(all_of(indicators)) %>%
-  pivot_longer(everything(), names_to = 'indicator', values_to = 'value') %>%
-  ggplot(aes(x = value)) +
-  geom_histogram(bins = 30, fill = '#447C91', color = 'white') +
-  facet_wrap(~indicator, scales = 'free', ncol = 2) +
-  labs(x = '2019 indicator value', y = 'Number of economies')
+```{python}
+#| label: correlations
+#| fig-cap: "Pearson correlation matrix of the four economic indicators."
+correlations = complete[features].corr()
+fig,ax = plt.subplots(figsize=(7,5.5))
+sns.heatmap(correlations,annot=True,fmt=".2f",center=0,cmap="BrBG",
+            vmin=-1,vmax=1,ax=ax)
+fig.tight_layout()
+plt.show()
 ```
 
-```{r}
-#| label: tbl-correlations
-#| tbl-cap: "Pearson correlations among economic indicators, complete 2019 sample"
-knitr::kable(round(correlation, 3))
+Imports and exports as percentages of GDP are strongly associated in the study sample. Correlation is descriptive and does not establish causality.
+
+## 4. Measuring economic distance
+
+Mahalanobis distance accounts for scales and correlations among the four inputs:
+
+$$D(x,US)=\sqrt{(x-x_{US})^T S^{-1}(x-x_{US})}$$
+
+Here, $S$ is the sample covariance matrix from the same complete-case observations, including the United States. Economic distance is **not** institutional quality, general development performance, or investment attractiveness.
+
+```{python}
+#| label: distances
+X=complete[features].to_numpy(dtype=float)
+cov=np.cov(X,rowvar=False)
+inverse=np.linalg.inv(cov)
+us=complete.loc[complete.iso3c.eq("USA"),features].iloc[0].to_numpy(dtype=float)
+complete["distance_us"]=[mahalanobis(x,us,inverse) for x in X]
+ranked=complete.loc[complete.iso3c.ne("USA")].sort_values("distance_us")
+closest=ranked[["country","distance_us"]].head(10)
+furthest=ranked[["country","distance_us"]].tail(10).sort_values("distance_us",ascending=False)
+print("Closest economies")
+display(closest.round(3).reset_index(drop=True))
+print("Most distant economies")
+display(furthest.round(3).reset_index(drop=True))
 ```
 
-*Interpretation to complete after rendering:* Discuss the central tendency, spread, outliers and strongest correlations using actual values from the tables. A correlation does not establish causation.
-
-## Q3. Mahalanobis distance
-
-For country $i$, the US reference vector $x_{US}$ and the sample covariance matrix $S$:
-
-$$D(i,US)=\sqrt{(x_i-x_{US})^{\mathsf{T}}S^{-1}(x_i-x_{US})}.$$
-
-Unlike unscaled Euclidean distance, Mahalanobis distance accounts for different variances and correlations among the four indicators. The covariance matrix is computed from the retained 2019 country sample. We take the square root of R's squared Mahalanobis distance. **Distance is descriptive and does not directly measure business risk or cultural and legal differences.**
-
-```{r}
-#| label: tbl-distance-summary
-#| tbl-cap: "Mahalanobis distances from the United States; USA excluded"
-knitr::kable(distance_summary, digits = 3)
+```{python}
+#| label: distance-chart
+#| fig-cap: "Three nearest and three most distant economies relative to the United States."
+highlights=pd.concat([closest.head(3),furthest.head(3)])
+fig,ax=plt.subplots(figsize=(9,4))
+sns.barplot(data=highlights,x="distance_us",y="country",
+            hue="country",dodge=False,legend=False,ax=ax,palette="viridis")
+ax.set(xlabel="Mahalanobis distance",ylabel="")
+fig.tight_layout()
+plt.show()
 ```
 
-## Q4. Closest and farthest economies
+## 5. Sensitivity to outliers
 
-```{r}
-#| label: tbl-closest
-#| tbl-cap: "Ten closest economies to the United States in 2019"
-knitr::kable(closest, digits = 3)
+To assess how extreme values influence results, the four indicators are winsorized at the 1st and 99th percentiles and the covariance matrix is recalculated. This is an alternative specification, not a replacement for the baseline.
+
+```{python}
+#| label: sensitivity
+adjusted=complete[features].copy()
+for col in features:
+    low,high=adjusted[col].quantile([.01,.99])
+    adjusted[col]=adjusted[col].clip(lower=low,upper=high)
+Xa=adjusted.to_numpy(dtype=float)
+inva=np.linalg.inv(np.cov(Xa,rowvar=False))
+usa=adjusted.loc[complete.iso3c.eq("USA")].iloc[0].to_numpy(dtype=float)
+complete["adjusted_distance_us"]=[mahalanobis(x,usa,inva) for x in Xa]
+comparison=complete.loc[complete.iso3c.ne("USA"),
+                        ["country","distance_us","adjusted_distance_us"]].copy()
+comparison["original_rank"]=comparison.distance_us.rank(method="min")
+comparison["adjusted_rank"]=comparison.adjusted_distance_us.rank(method="min")
+comparison["rank_change"]=comparison.adjusted_rank-comparison.original_rank
+display(comparison.loc[comparison.rank_change.abs().sort_values(ascending=False).index].head(10).round(2))
 ```
 
-```{r}
-#| label: tbl-farthest
-#| tbl-cap: "Ten farthest economies from the United States in 2019"
-knitr::kable(farthest, digits = 3)
-```
+## 6. Conclusions and limitations
 
-```{r}
-#| label: fig-ranked
-#| fig-cap: "Three closest and three farthest economies to the USA"
-plot_data <- bind_rows(
-  head(closest, 3) %>% mutate(group = 'Closest'),
-  head(farthest, 3) %>% mutate(group = 'Farthest')
-)
-ggplot(plot_data, aes(x = reorder(country, distance_us), y = distance_us)) +
-  geom_col(fill = '#447C91') + coord_flip() +
-  facet_wrap(~group, scales = 'free_y', ncol = 1) +
-  labs(x = NULL, y = 'Mahalanobis distance from the USA')
-```
+Differences across economies depend on indicator selection, missing-data exclusions, and statistical treatment of unusually large observations. This is a single-year descriptive analysis, not causal evidence. The original sample includes economies rather than only sovereign states. Results should not be used on their own to infer regulatory similarity or identify the best investment destination.
 
-*Interpretation to complete after rendering:* Name the three closest and three farthest countries and explain their differences in terms of **the measured variables**. Check whether unusual observations affect rankings.
+**SDG relevance:** Exports and imports support a broader discussion of international trade and SDG 17. They are not a direct estimate of the official Target 17.11 indicator, developing countries' share of global exports.
 
-## Q5. International expansion recommendation
+## Sources and research credit
 
-*Evidence-based recommendation to complete:* Select a clearly defined industry and potential host economy; reference the **actual distance rank** and add independent evidence on market size, growth, regulation and market entry costs. A low distance score alone is not proof of investment attractiveness. Avoid recommending a country by incorrectly claiming it is the closest when the ranking disagrees.
+- World Bank, *World Development Indicators*, 2019 dataset: `data/WDI_Raw_2019.xlsx`.
+- Berry, H., Guillén, M. F., & Zhou, N. (2010). *An institutional approach to cross-national distance*. *Journal of International Business Studies*, 41, 1460–1480. https://doi.org/10.1057/jibs.2010.28
+- Original empirical project: Chipo Jaya and Xianghan Zhu. This is a Python adaptation and not a claim to replicate Berry et al.'s exact index.
 
-## Limitations and references
-
-Results cover only 2019, omit economies with missing observations, and depend on the choice of indicators and covariance sample. GDP per capita describes average output per person, not total market size. Import/export shares describe trade openness, not bilateral US trade ties. This specification is an operationalization for the assignment, not necessarily an exact reproduction of the authors' published index.
-
-Berry, H., Guillén, M. F., & Zhou, N. (2010). An institutional approach to cross-national distance. *Journal of International Business Studies, 41*(9), 1460–1480. https://doi.org/10.1057/jibs.2010.28
-
-World Bank. *World Development Indicators*. https://databank.worldbank.org/source/world-development-indicators
+[Source repository](https://github.com/chipojaya1/ISS-Economic-Distance)
