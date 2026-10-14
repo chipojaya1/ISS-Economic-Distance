@@ -156,39 +156,67 @@ Imports and exports as percentages of GDP are strongly associated in the study s
 
 ## 4. Measuring economic distance
 
-Mahalanobis distance accounts for scales and correlations among the four inputs:
+### Why use Mahalanobis distance?
+
+A simple comparison might focus on how far two economies differ in each indicator. However, GDP per capita is measured in dollars while the other indicators are percentages. Imports and exports also tend to move together. **Mahalanobis distance** takes these differences in scale and the relationships between indicators into account, allowing us to summarize the four measures in one comparison.
 
 $$D(x,US)=\sqrt{(x-x_{US})^T S^{-1}(x-x_{US})}$$
 
-Here, $S$ is the sample covariance matrix from the same complete-case observations, including the United States. Economic distance is **not** institutional quality, general development performance, or investment attractiveness.
+Here $S$ is the covariance matrix calculated from the same complete-case sample. The United States is the reference economy, so its distance from itself is zero. **Smaller distances indicate greater similarity to the United States across these four selected indicators; they do not imply better economic performance.**
+
+### Which economies are most similar to or different from the United States?
 
 ```{python}
 #| label: distances
-X=complete[features].to_numpy(dtype=float)
-cov=np.cov(X,rowvar=False)
-inverse=np.linalg.inv(cov)
-us=complete.loc[complete.iso3c.eq("USA"),features].iloc[0].to_numpy(dtype=float)
-complete["distance_us"]=[mahalanobis(x,us,inverse) for x in X]
-ranked=complete.loc[complete.iso3c.ne("USA")].sort_values("distance_us")
-closest=ranked[["country","distance_us"]].head(10)
-furthest=ranked[["country","distance_us"]].tail(10).sort_values("distance_us",ascending=False)
-print("Closest economies")
+X = complete[features].to_numpy(dtype=float)
+cov = np.cov(X, rowvar=False)
+inverse = np.linalg.inv(cov)
+us = complete.loc[complete.iso3c.eq("USA"), features].iloc[0].to_numpy(dtype=float)
+complete["distance_us"] = [mahalanobis(x, us, inverse) for x in X]
+ranked = complete.loc[complete.iso3c.ne("USA")].sort_values("distance_us")
+closest = ranked[["country", "distance_us"]].head(5)
+furthest = ranked[["country", "distance_us"]].tail(5).sort_values("distance_us", ascending=False)
+print("Five economies closest to the United States")
 display(closest.round(3).reset_index(drop=True))
-print("Most distant economies")
+print("Five economies furthest from the United States")
 display(furthest.round(3).reset_index(drop=True))
 ```
 
+In the baseline results, **Australia, Norway, and the United Kingdom** are the three closest economies to the United States. Their combined income, inflation, and trade profiles are relatively similar to the US profile according to this measure. Iceland and Canada follow.
+
+At the other end, **Venezuela, Djibouti, and Hong Kong SAR, China** have the greatest distances. The fact that Luxembourg also appears among the most distant illustrates an important point: the distance measure does not simply separate rich from poor economies. Very high shares of international trade can contribute to a distinctive economic profile.
+
+### Visual comparison of the extremes
+
 ```{python}
 #| label: distance-chart
-#| fig-cap: "Three nearest and three most distant economies relative to the United States."
-highlights=pd.concat([closest.head(3),furthest.head(3)])
-fig,ax=plt.subplots(figsize=(9,4))
-sns.barplot(data=highlights,x="distance_us",y="country",
-            hue="country",dodge=False,legend=False,ax=ax,palette="viridis")
-ax.set(xlabel="Mahalanobis distance",ylabel="")
-fig.tight_layout()
+#| fig-cap: "Five closest and five most distant economies relative to the United States, 2019."
+from matplotlib.ticker import FuncFormatter
+fig, axes = plt.subplots(2, 1, figsize=(10, 8.5))
+for ax, subset, heading, color in [
+    (axes[0], closest.iloc[::-1], "Closest to the United States", "#277c69"),
+    (axes[1], furthest.iloc[::-1], "Most distant from the United States", "#b46c51")
+]:
+    ax.barh(subset["country"], subset["distance_us"], color=color)
+    ax.set_title(heading, loc="left", fontsize=12, fontweight="bold")
+    ax.set_xlabel("Mahalanobis distance (no units)")
+    ax.grid(axis="x", alpha=.2)
+    ax.grid(axis="y", visible=False)
+    ax.set_xlim(0, subset["distance_us"].max()*1.2)
+    for i, value in enumerate(subset["distance_us"]):
+        ax.text(value + subset["distance_us"].max()*.025, i, f"{value:.2f}",
+                va="center", fontsize=9)
+fig.tight_layout(h_pad=2)
 plt.show()
 ```
+
+These distances are relative comparisons, **not percentages or probabilities**. A score of 6, for example, does not mean an economy is six times poorer, richer, or less developed than the United States.
+
+### What should we be careful about?
+
+The results depend on the four indicators selected, the economies with complete data, and the way extreme values influence the covariance calculation. Venezuela's unusually high 2019 inflation is especially important to consider. We cannot tell from the overall distance score alone exactly how much of a country's ranking is explained by each indicator.
+
+The next section checks how rankings change when extreme observations are treated differently. The analysis remains descriptive: it measures similarity in selected economic characteristics, not the causes of those differences.
 
 ## 5. Sensitivity to outliers
 
