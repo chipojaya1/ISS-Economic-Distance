@@ -99,7 +99,7 @@ fig = px.histogram(
     x="gdp_per_capita",
     nbins=28,
     color_discrete_sequence=["#277C69"],
-    title="<b>GDP per capita varied widely in 2019</b><br><sup>2019 | 182 economies with complete data | constant 2015 US$ per person</sup>"
+    title="GDP per capita varied widely in 2019"
 )
 
 # Customize layout and add vertical lines for mean/median
@@ -130,6 +130,23 @@ fig.add_vline(
     annotation_position="top left"
 )
 
+# Keep the subtitle on a separate line, with generous spacing from the main title.
+fig.update_layout(
+    title=dict(
+        text=fig.layout.title.text,
+        x=0.03,
+        y=0.975,
+        yanchor="top",
+        font=dict(size=19)
+    ),
+    margin=dict(l=75, r=45, t=145, b=65)
+)
+fig.add_annotation(
+    text="2019 | 182 economies with complete data | constant 2015 US$ per person",
+    xref="paper", yref="paper", x=0, y=1.105,
+    xanchor="left", yanchor="bottom", showarrow=False,
+    font=dict(size=12, color="#64748b"), align="left"
+)
 fig.show()
 ```
 
@@ -153,7 +170,7 @@ fig = px.histogram(
     x="inflation",
     nbins=25,
     color_discrete_sequence=["#277C69"],
-    title=f"<b>How Inflation Rates Differed Across Economies</b><br><sup>2019 | {len(inflation_visible)} of {len(plot_df)} economies shown ({inflation_display_min}% to {inflation_display_max}%)</sup>"
+    title="How Inflation Rates Differed Across Economies"
 )
 
 # Add vertical line for overall median
@@ -175,6 +192,23 @@ fig.update_layout(
     xaxis_range=[inflation_display_min, inflation_display_max]
 )
 
+# Keep the subtitle on a separate line, with generous spacing from the main title.
+fig.update_layout(
+    title=dict(
+        text=fig.layout.title.text,
+        x=0.03,
+        y=0.975,
+        yanchor="top",
+        font=dict(size=19)
+    ),
+    margin=dict(l=75, r=45, t=145, b=65)
+)
+fig.add_annotation(
+    text=f"2019 | {len(inflation_visible)} of {len(plot_df)} economies shown ({inflation_display_min}% to {inflation_display_max}%)",
+    xref="paper", yref="paper", x=0, y=1.105,
+    xanchor="left", yanchor="bottom", showarrow=False,
+    font=dict(size=12, color="#64748b"), align="left"
+)
 fig.show()
 print(f"Note: {outside_count} of {len(plot_df)} economies fall outside the displayed range (-10% to 30%). All observations remain in the analysis.")
 ```
@@ -196,7 +230,7 @@ fig = px.histogram(
     x="imports",
     nbins=24,
     color_discrete_sequence=["#277C69"],
-    title="<b>How Much Economies Import Relative to Their Size</b><br><sup>2019 | Imports of goods and services as a percentage of GDP</sup>"
+    title="How Much Economies Import Relative to Their Size"
 )
 
 # Add lines for mean and median
@@ -225,6 +259,23 @@ fig.update_layout(
     xaxis_range=[0, 220]
 )
 
+# Keep the subtitle on a separate line, with generous spacing from the main title.
+fig.update_layout(
+    title=dict(
+        text=fig.layout.title.text,
+        x=0.03,
+        y=0.975,
+        yanchor="top",
+        font=dict(size=19)
+    ),
+    margin=dict(l=75, r=45, t=145, b=65)
+)
+fig.add_annotation(
+    text="2019 | Imports of goods and services as a percentage of GDP",
+    xref="paper", yref="paper", x=0, y=1.105,
+    xanchor="left", yanchor="bottom", showarrow=False,
+    font=dict(size=12, color="#64748b"), align="left"
+)
 fig.show()
 ```
 
@@ -243,7 +294,7 @@ fig = px.histogram(
     x="exports",
     nbins=24,
     color_discrete_sequence=["#277C69"],
-    title="<b>How Much Economies Export Relative to Their Size</b><br><sup>2019 | Exports of goods and services as a percentage of GDP</sup>"
+    title="How Much Economies Export Relative to Their Size"
 )
 
 # Add lines for mean and median
@@ -272,6 +323,23 @@ fig.update_layout(
     xaxis_range=[0, 220]
 )
 
+# Keep the subtitle on a separate line, with generous spacing from the main title.
+fig.update_layout(
+    title=dict(
+        text=fig.layout.title.text,
+        x=0.03,
+        y=0.975,
+        yanchor="top",
+        font=dict(size=19)
+    ),
+    margin=dict(l=75, r=45, t=145, b=65)
+)
+fig.add_annotation(
+    text="2019 | Exports of goods and services as a percentage of GDP",
+    xref="paper", yref="paper", x=0, y=1.105,
+    xanchor="left", yanchor="bottom", showarrow=False,
+    font=dict(size=12, color="#64748b"), align="left"
+)
 fig.show()
 ```
 
@@ -298,7 +366,7 @@ fig = px.imshow(
     zmin=-1,
     zmax=1,
     text_auto=".2f",
-    title="<b>How the Four Economic Indicators Relate</b>"
+    title="How the Four Economic Indicators Relate"
 )
 
 # Update layout with formatting matching the style requirements
@@ -310,6 +378,23 @@ fig.update_layout(
     margin=dict(l=40, r=40, t=80, b=40)
 )
 
+# Keep the subtitle on a separate line, with generous spacing from the main title.
+fig.update_layout(
+    title=dict(
+        text=fig.layout.title.text,
+        x=0.03,
+        y=0.975,
+        yanchor="top",
+        font=dict(size=19)
+    ),
+    margin=dict(l=75, r=45, t=145, b=65)
+)
+fig.add_annotation(
+    text="Pearson correlations across four economic indicators, 2019",
+    xref="paper", yref="paper", x=0, y=1.105,
+    xanchor="left", yanchor="bottom", showarrow=False,
+    font=dict(size=12, color="#64748b"), align="left"
+)
 fig.show()
 ```
 
@@ -451,7 +536,7 @@ for group_name, group_color in [("Baseline & Closest", "#277C69"), ("Most distan
 
 # 6. Customize layout gridlines and dimensions
 fig.update_layout(
-    title="<b>Economic Distance from the United States (2019)</b><br><sup>Measured using Mahalanobis Distance across GDP, Inflation, Imports, and Exports</sup>",
+    title="Economic Distance from the United States (2019)",
     xaxis_title="Mahalanobis distance (higher means more different)",
     yaxis_title="Country / Economy",
     template="plotly_white",
@@ -462,6 +547,23 @@ fig.update_layout(
     xaxis=dict(showgrid=True, gridcolor='LightGray')
 )
 
+# Keep the subtitle on a separate line, with generous spacing from the main title.
+fig.update_layout(
+    title=dict(
+        text=fig.layout.title.text,
+        x=0.03,
+        y=0.975,
+        yanchor="top",
+        font=dict(size=19)
+    ),
+    margin=dict(l=75, r=45, t=145, b=65)
+)
+fig.add_annotation(
+    text="Measured using GDP per capita, inflation, imports, and exports",
+    xref="paper", yref="paper", x=0, y=1.105,
+    xanchor="left", yanchor="bottom", showarrow=False,
+    font=dict(size=12, color="#64748b"), align="left"
+)
 fig.show()
 ```
 
