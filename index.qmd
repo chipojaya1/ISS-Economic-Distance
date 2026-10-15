@@ -356,7 +356,9 @@ These differences highlight the importance of considering how unusual observatio
 
 A simple comparison might focus on how far two economies differ in each indicator. However, GDP per capita is measured in dollars while the other indicators are percentages. Imports and exports also tend to move together. **Mahalanobis distance** takes these differences in scale and the relationships between indicators into account, allowing us to summarize the four measures in one comparison.
 
-$$D(x,US)=\sqrt{(x-x_{US})^T S^{-1}(x-x_{US})}$$
+$
+D(x,US)=\sqrt{(x-x_{US})^T S^{-1}(x-x_{US})}
+$
 
 Here $S$ is the covariance matrix calculated from the same complete-case sample. The United States is the reference economy, so its distance from itself is zero. **Smaller distances indicate greater similarity to the United States across these four selected indicators; they do not imply better economic performance.**
 
