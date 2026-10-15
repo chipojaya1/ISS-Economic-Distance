@@ -509,33 +509,65 @@ The results depend on the four indicators selected, the economies with complete 
 
 The next section checks how rankings change when extreme observations are treated differently. The analysis remains descriptive: it measures similarity in selected economic characteristics, not the causes of those differences.
 
-## 5. Conclusion and your interpretation
+## 5. Conclusion: Cross-country interpretation
 
-The analysis describes differences between the United States and other economies in 2019 using four World Bank indicators: GDP per capita, GDP-deflator inflation, imports, and exports. The Pearson correlation results show a strong positive association between imports and exports. Mahalanobis distance combines all four indicators, accounting for their differing scales and correlations.
+The results show that **economic similarity is multidimensional**. Two economies can have relatively similar GDP per capita but very different trade shares. Conversely, economies with large Mahalanobis distances from the United States can have very different economic profiles from one another.
 
-### Your interpretation of the descriptive findings
+### The United States and its three closest economies
 
-**[YOUR INTERPRETATION: What stands out most in the GDP per capita, inflation, imports, and exports figures? Refer to specific observations in the charts and explain why you think they matter.]**
+```{python}
+#| label: conclusion-closest-table
+#| echo: false
+columns = ["country", "gdp_per_capita", "inflation", "imports", "exports", "distance_us"]
+comparison = pd.concat([
+    complete.loc[complete.iso3c.eq("USA"), columns],
+    ranked.head(3)[columns]
+])
+display(comparison.rename(columns={
+    "country": "Economy",
+    "gdp_per_capita": "GDP per capita (2015 US$)",
+    "inflation": "Inflation (%)",
+    "imports": "Imports (% GDP)",
+    "exports": "Exports (% GDP)",
+    "distance_us": "Distance"
+}).round(3).reset_index(drop=True))
+```
 
-### Your interpretation of the correlations
+Australia (0.557) is closest to the United States. Its GDP per capita was approximately $59,181 compared with $61,048 in the United States, although its inflation and trade shares were higher. Norway (0.979) had higher GDP per capita and higher trade shares than the United States, as well as negative GDP-deflator inflation. The United Kingdom (1.237) had lower GDP per capita and higher trade shares. **These rankings reflect the combined four-indicator profiles, rather than similarity in each indicator separately.**
 
-**[YOUR INTERPRETATION: What do the Pearson and Spearman results reveal about relationships between the four indicators? Which difference between the two methods do you consider most important, and why?]**
+### The three most distant economies
 
-### Your interpretation of economic distance
+```{python}
+#| label: conclusion-furthest-table
+#| echo: false
+comparison = ranked.tail(3).sort_values("distance_us", ascending=False)[columns]
+display(comparison.rename(columns={
+    "country": "Economy",
+    "gdp_per_capita": "GDP per capita (2015 US$)",
+    "inflation": "Inflation (%)",
+    "imports": "Imports (% GDP)",
+    "exports": "Exports (% GDP)",
+    "distance_us": "Distance"
+}).round(3).reset_index(drop=True))
+```
 
-The baseline calculation identifies Australia, Norway, and the United Kingdom as the three closest economies to the United States. Venezuela, Djibouti, and Hong Kong SAR, China have the largest distances in this sample. These rankings measure similarity on the four selected indicators, **not** overall economic success or quality.
+Venezuela (13.838) recorded exceptionally high GDP-deflator inflation of approximately 21,909% and low GDP per capita compared with the United States. Djibouti (7.625) had much lower GDP per capita and exceptionally high import and export shares, despite comparatively low inflation.
 
-**[YOUR INTERPRETATION: Why do you think these economies appear near or far from the United States? Support your explanation with indicator values from the results; avoid treating the distance score itself as proof of a cause.]**
+Hong Kong SAR, China (6.590) is particularly informative: its GDP per capita was approximately $44,195 and inflation about 2.04%, but both imports and exports exceeded 175% of GDP. Imports and exports can exceed 100% of GDP because they represent gross cross-border flows relative to domestic value added, a pattern that can occur in trade and re-export hubs.
 
-### Your overall conclusion
+These comparisons identify important contrasts in the observed indicators. **They do not establish how much of an individual Mahalanobis score is attributable to any one indicator**, because the distance also incorporates the sample covariance matrix.
 
-**[YOUR CONCLUSION: In 3–5 sentences, answer the research question. Explain what examining all four indicators together adds to a comparison based on GDP per capita alone, and identify the main insight you want readers to remember.]**
+### Overall finding
 
-### Limitations
+The three closest economies, Australia, Norway, and the United Kingdom, exhibit relatively similar combined profiles to the United States. Venezuela, Djibouti, and Hong Kong SAR show that **large distances can coexist with very different combinations of income, inflation, and international trade**. Economic distance should therefore not be interpreted as a ranking of economic development, institutional quality, or investment attractiveness.
 
-This is a descriptive comparison of a single year and cannot establish causation. Its results depend on the four indicators selected and on excluding economies with missing data. The sample includes World Bank economies and territories, not exclusively sovereign states. Unusually extreme observations can influence the covariance matrix and, therefore, the distance results. The analysis does not establish regulatory similarity or identify desirable investment destinations.
+### Limitations and sample
 
-**SDG relevance:** Imports and exports provide context for discussing international trade and Sustainable Development Goal 17. The report does not directly measure the official Target 17.11 indicator, developing countries' share of global exports.
+This is a descriptive comparison for 2019, not a causal explanation. Results depend on the selected four indicators, complete-case sample, and covariance structure. Extreme observations such as Venezuela's inflation can affect that covariance structure.
+
+The World Bank workbook contains 217 economy records; 182 have complete observations, and 35 are excluded for missing values. Kosovo (XKX) is retained as an individual economy. The sample includes some non-sovereign economies.
+
+**SDG relevance:** The imports and exports indicators provide context for SDG 17 but do not directly estimate the official Target 17.11 indicator.
 
 ## Sources and research credit
 
