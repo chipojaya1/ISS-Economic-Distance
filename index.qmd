@@ -97,17 +97,67 @@ Most economies are clustered toward the lower end of income per person, while a 
 
 ### Inflation — how quickly prices were changing
 
+The chart below uses the same focused display and median reference line as the Python notebook. It shows the range where most economies fall, rather than allowing unusually high inflation values to compress the entire visual.
+
 ```{python}
 #| label: distribution-inflation
-#| fig-cap: "GDP-deflator inflation across economies in 2019."
-fig, ax = plt.subplots(figsize=(10, 4.5))
-sns.histplot(complete["inflation"], bins=35, ax=ax, color="#277c69")
-ax.set(xlabel="Inflation, GDP deflator (annual %)", ylabel="Number of economies")
-fig.tight_layout()
+#| fig-cap: "GDP-deflator inflation in 2019. The chart focuses on −10% to 30%; outlying economies remain in all calculations."
+from matplotlib import ticker
+
+MAIN_COLOR = "#277C69"
+MEDIAN_COLOR = "#34495E"
+plot_df = complete
+inflation_display_min = -10
+inflation_display_max = 30
+inflation_visible = plot_df[
+    plot_df["inflation"].between(inflation_display_min, inflation_display_max)
+].copy()
+outside_count = len(plot_df) - len(inflation_visible)
+
+fig, ax = plt.subplots(figsize=(11, 5.5), dpi=120)
+sns.histplot(
+    data=inflation_visible,
+    x="inflation",
+    bins=25,
+    color=MAIN_COLOR,
+    edgecolor="white",
+    linewidth=0.7,
+    ax=ax
+)
+
+inflation_median = plot_df["inflation"].median()
+ax.axvline(
+    inflation_median,
+    color=MEDIAN_COLOR,
+    linestyle="--",
+    linewidth=2,
+    label=f"Overall median: {inflation_median:.1f}%"
+)
+ax.set_title(
+    "How Inflation Rates Differed Across Economies",
+    fontsize=16, fontweight="bold", loc="left", pad=16
+)
+ax.set_xlabel("GDP-deflator inflation (annual %)")
+ax.set_ylabel("Number of economies")
+ax.set_xlim(inflation_display_min, inflation_display_max)
+ax.xaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: f"{x:.0f}%"))
+ax.text(
+    0, -0.23,
+    f"Note: {outside_count} of {len(plot_df)} economies fall "
+    "outside the displayed range (-10% to 30%). "
+    "All observations remain in the analysis.",
+    transform=ax.transAxes, fontsize=9, color="#555555",
+    ha="left", va="top", wrap=True
+)
+ax.legend(frameon=False)
+ax.grid(axis="y", alpha=0.2)
+ax.grid(axis="x", visible=False)
+sns.despine()
+plt.subplots_adjust(bottom=0.27)
 plt.show()
 ```
 
-For most economies, inflation was relatively modest in 2019. A few had exceptionally high rates, making the full chart look stretched. This reminds us that the experience of rapid price increases was not shared equally. Here, inflation is measured using the GDP deflator, rather than a household shopping-basket price index.
+Most economies experienced relatively modest inflation in 2019. A few had exceptionally high rates, so we focus the chart on the range that is easiest to compare. The note beneath the chart tells readers how many observations lie outside the displayed range. **These economies are not removed from the data or from the Mahalanobis distance calculations.**
 
 ### Imports — goods and services bought from abroad
 
