@@ -85,6 +85,10 @@ display(complete[features].describe().T[
 
 ### GDP per capita — economic output per person
 
+**GDP per capita varied widely in 2019**
+
+*2019 | 182 economies with complete data | constant 2015 US$ per person*
+
 ```{python}
 #| label: distribution-gdp
 import plotly.express as px
@@ -130,29 +134,18 @@ fig.add_vline(
     annotation_position="top left"
 )
 
-# Keep the subtitle on a separate line, with generous spacing from the main title.
-fig.update_layout(
-    title=dict(
-        text=fig.layout.title.text,
-        x=0.03,
-        y=0.975,
-        yanchor="top",
-        font=dict(size=19)
-    ),
-    margin=dict(l=75, r=45, t=145, b=65)
-)
-fig.add_annotation(
-    text="2019 | 182 economies with complete data | constant 2015 US$ per person",
-    xref="paper", yref="paper", x=0, y=1.105,
-    xanchor="left", yanchor="bottom", showarrow=False,
-    font=dict(size=12, color="#64748b"), align="left"
-)
+# Title and subtitle are displayed as page text above this chart.
+fig.update_layout(title=None, margin=dict(l=75, r=45, t=35, b=65))
 fig.show()
 ```
 
 GDP per capita varies greatly across economies. Most have relatively low economic output per person, while a much smaller group has considerably higher values. This difference highlights the unequal distribution of economic resources and productive capacity across the world.
 
 ### Inflation — how quickly prices were changing
+
+**How Inflation Rates Differed Across Economies**
+
+*2019 | economies within −10% to 30% are shown; all observations are retained in the analysis*
 
 ```{python}
 #| label: distribution-inflation
@@ -192,23 +185,8 @@ fig.update_layout(
     xaxis_range=[inflation_display_min, inflation_display_max]
 )
 
-# Keep the subtitle on a separate line, with generous spacing from the main title.
-fig.update_layout(
-    title=dict(
-        text=fig.layout.title.text,
-        x=0.03,
-        y=0.975,
-        yanchor="top",
-        font=dict(size=19)
-    ),
-    margin=dict(l=75, r=45, t=145, b=65)
-)
-fig.add_annotation(
-    text=f"2019 | {len(inflation_visible)} of {len(plot_df)} economies shown ({inflation_display_min}% to {inflation_display_max}%)",
-    xref="paper", yref="paper", x=0, y=1.105,
-    xanchor="left", yanchor="bottom", showarrow=False,
-    font=dict(size=12, color="#64748b"), align="left"
-)
+# Title and subtitle are displayed as page text above this chart.
+fig.update_layout(title=None, margin=dict(l=75, r=45, t=35, b=65))
 fig.show()
 print(f"Note: {outside_count} of {len(plot_df)} economies fall outside the displayed range (-10% to 30%). All observations remain in the analysis.")
 ```
@@ -218,6 +196,10 @@ Most economies experienced relatively modest inflation in 2019. However, some ex
 The focused inflation chart excludes the extremes **from the display only**, not from any distance calculations.
 
 ### Imports — goods and services bought from abroad
+
+**How Much Economies Import Relative to Their Size**
+
+*2019 | imports of goods and services as a percentage of GDP*
 
 ```{python}
 #| label: distribution-imports
@@ -259,29 +241,18 @@ fig.update_layout(
     xaxis_range=[0, 220]
 )
 
-# Keep the subtitle on a separate line, with generous spacing from the main title.
-fig.update_layout(
-    title=dict(
-        text=fig.layout.title.text,
-        x=0.03,
-        y=0.975,
-        yanchor="top",
-        font=dict(size=19)
-    ),
-    margin=dict(l=75, r=45, t=145, b=65)
-)
-fig.add_annotation(
-    text="2019 | Imports of goods and services as a percentage of GDP",
-    xref="paper", yref="paper", x=0, y=1.105,
-    xanchor="left", yanchor="bottom", showarrow=False,
-    font=dict(size=12, color="#64748b"), align="left"
-)
+# Title and subtitle are displayed as page text above this chart.
+fig.update_layout(title=None, margin=dict(l=75, r=45, t=35, b=65))
 fig.show()
 ```
 
 Economies differ in how much they purchase from the rest of the world relative to the size of their economies. Some rely more heavily on international goods and services, while others import a smaller share of their GDP.
 
 ### Exports — goods and services sold abroad
+
+**How Much Economies Export Relative to Their Size**
+
+*2019 | exports of goods and services as a percentage of GDP*
 
 ```{python}
 #| label: distribution-exports
@@ -323,29 +294,18 @@ fig.update_layout(
     xaxis_range=[0, 220]
 )
 
-# Keep the subtitle on a separate line, with generous spacing from the main title.
-fig.update_layout(
-    title=dict(
-        text=fig.layout.title.text,
-        x=0.03,
-        y=0.975,
-        yanchor="top",
-        font=dict(size=19)
-    ),
-    margin=dict(l=75, r=45, t=145, b=65)
-)
-fig.add_annotation(
-    text="2019 | Exports of goods and services as a percentage of GDP",
-    xref="paper", yref="paper", x=0, y=1.105,
-    xanchor="left", yanchor="bottom", showarrow=False,
-    font=dict(size=12, color="#64748b"), align="left"
-)
+# Title and subtitle are displayed as page text above this chart.
+fig.update_layout(title=None, margin=dict(l=75, r=45, t=35, b=65))
 fig.show()
 ```
 
 Exports also vary considerably. Some economies sell a much larger share of their goods and services internationally than others. This illustrates differences in how strongly economies participate in international trade.
 
 ### How the indicators relate
+
+**How the Four Economic Indicators Relate**
+
+*Pearson correlations across four economic indicators, 2019*
 
 ```{python}
 #| label: correlations
@@ -378,23 +338,8 @@ fig.update_layout(
     margin=dict(l=40, r=40, t=80, b=40)
 )
 
-# Keep the subtitle on a separate line, with generous spacing from the main title.
-fig.update_layout(
-    title=dict(
-        text=fig.layout.title.text,
-        x=0.03,
-        y=0.975,
-        yanchor="top",
-        font=dict(size=19)
-    ),
-    margin=dict(l=75, r=45, t=145, b=65)
-)
-fig.add_annotation(
-    text="Pearson correlations across four economic indicators, 2019",
-    xref="paper", yref="paper", x=0, y=1.105,
-    xanchor="left", yanchor="bottom", showarrow=False,
-    font=dict(size=12, color="#64748b"), align="left"
-)
+# Title and subtitle are displayed as page text above this chart.
+fig.update_layout(title=None, margin=dict(l=75, r=45, t=35, b=65))
 fig.show()
 ```
 
@@ -470,6 +415,10 @@ In the baseline results, **Australia, Norway, and the United Kingdom** are the t
 At the other end, **Venezuela, Djibouti, and Hong Kong SAR, China** have the greatest distances. The fact that Luxembourg also appears among the most distant illustrates an important point: the distance measure does not simply separate rich from poor economies. Very high shares of international trade can contribute to a distinctive economic profile.
 
 ### Interactive comparison of the extremes
+
+**Economic Distance from the United States (2019)**
+
+*Mahalanobis distance using GDP per capita, inflation, imports, and exports*
 
 This lollipop chart follows the notebook and includes the United States at distance zero as the reference point. The five nearest and five most distant other economies are shown alongside it.
 
@@ -547,23 +496,8 @@ fig.update_layout(
     xaxis=dict(showgrid=True, gridcolor='LightGray')
 )
 
-# Keep the subtitle on a separate line, with generous spacing from the main title.
-fig.update_layout(
-    title=dict(
-        text=fig.layout.title.text,
-        x=0.03,
-        y=0.975,
-        yanchor="top",
-        font=dict(size=19)
-    ),
-    margin=dict(l=75, r=45, t=145, b=65)
-)
-fig.add_annotation(
-    text="Measured using GDP per capita, inflation, imports, and exports",
-    xref="paper", yref="paper", x=0, y=1.105,
-    xanchor="left", yanchor="bottom", showarrow=False,
-    font=dict(size=12, color="#64748b"), align="left"
-)
+# Title and subtitle are displayed as page text above this chart.
+fig.update_layout(title=None, margin=dict(l=75, r=45, t=35, b=65))
 fig.show()
 ```
 
