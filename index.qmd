@@ -15,7 +15,7 @@ execute:
 
 ::: {.callout-note}
 ## ISS Data Analytics Project 1
-This single-page Python report follows the data preparation, variable definitions, descriptive analysis, correlation analysis, and Mahalanobis-distance workflow in [the updated Python notebook](https://github.com/chipojaya1/ISS-Economic-Distance/blob/main/Economic_distance_analysis.ipynb). The sensitivity analysis is a separate extension. The report adapts an original collaborative empirical project by **Chipo Jaya and Xianghan Zhu**. It provides context for SDG 17 but does **not** directly measure official Target 17.11.
+This single-page Python report follows the data preparation, variable definitions, descriptive analysis, correlation analysis, and Mahalanobis-distance workflow in [the updated Python notebook](https://github.com/chipojaya1/ISS-Economic-Distance/blob/main/Economic_distance_analysis.ipynb). The report adapts an original collaborative empirical project by **Chipo Jaya and Xianghan Zhu**. It provides context for SDG 17 but does **not** directly measure official Target 17.11.
 :::
 
 ## 1. Research question and data
@@ -471,35 +471,33 @@ The results depend on the four indicators selected, the economies with complete 
 
 The next section checks how rankings change when extreme observations are treated differently. The analysis remains descriptive: it measures similarity in selected economic characteristics, not the causes of those differences.
 
-## 5. Sensitivity to outliers
+## 5. Conclusion and your interpretation
 
-To assess how extreme values influence results, the four indicators are winsorized at the 1st and 99th percentiles and the covariance matrix is recalculated. This is an alternative specification, not a replacement for the baseline.
+The analysis describes differences between the United States and other economies in 2019 using four World Bank indicators: GDP per capita, GDP-deflator inflation, imports, and exports. The Pearson correlation results show a strong positive association between imports and exports. Mahalanobis distance combines all four indicators, accounting for their differing scales and correlations.
 
-```{python}
-#| label: sensitivity
-adjusted=complete[features].copy()
-for col in features:
-    low,high=adjusted[col].quantile([.01,.99])
-    adjusted[col]=adjusted[col].clip(lower=low,upper=high)
-Xa=adjusted.to_numpy(dtype=float)
-inva=np.linalg.inv(np.cov(Xa,rowvar=False))
-usa=adjusted.loc[complete.iso3c.eq("USA")].iloc[0].to_numpy(dtype=float)
-complete["adjusted_distance_us"]=[mahalanobis(x,usa,inva) for x in Xa]
-comparison=complete.loc[complete.iso3c.ne("USA"),
-                        ["country","distance_us","adjusted_distance_us"]].copy()
-comparison["original_rank"]=comparison.distance_us.rank(method="min")
-comparison["adjusted_rank"]=comparison.adjusted_distance_us.rank(method="min")
-comparison["rank_change"]=comparison.adjusted_rank-comparison.original_rank
-display(comparison.loc[comparison.rank_change.abs().sort_values(ascending=False).index].head(10).round(2))
-```
+### Your interpretation of the descriptive findings
 
-## 6. Conclusions and limitations
+**[YOUR INTERPRETATION: What stands out most in the GDP per capita, inflation, imports, and exports figures? Refer to specific observations in the charts and explain why you think they matter.]**
 
-Differences across economies depend on indicator selection, missing-data exclusions, and statistical treatment of unusually large observations. This is a single-year descriptive analysis, not causal evidence. The original sample includes economies rather than only sovereign states. Results should not be used on their own to infer regulatory similarity or identify the best investment destination.
+### Your interpretation of the correlations
 
-**Replication note:** The source notebook identifies GDP per capita as `gdp_per_capita` and the two trade indicators as `imports` and `exports`; these names are now used consistently in this report. The sensitivity check below is an additional analysis, not a result established by the source notebook.
+**[YOUR INTERPRETATION: What do the Pearson and Spearman results reveal about relationships between the four indicators? Which difference between the two methods do you consider most important, and why?]**
 
-**SDG relevance:** Exports and imports support a broader discussion of international trade and SDG 17. They are not a direct estimate of the official Target 17.11 indicator, developing countries' share of global exports.
+### Your interpretation of economic distance
+
+The baseline calculation identifies Australia, Norway, and the United Kingdom as the three closest economies to the United States. Venezuela, Djibouti, and Hong Kong SAR, China have the largest distances in this sample. These rankings measure similarity on the four selected indicators, **not** overall economic success or quality.
+
+**[YOUR INTERPRETATION: Why do you think these economies appear near or far from the United States? Support your explanation with indicator values from the results; avoid treating the distance score itself as proof of a cause.]**
+
+### Your overall conclusion
+
+**[YOUR CONCLUSION: In 3–5 sentences, answer the research question. Explain what examining all four indicators together adds to a comparison based on GDP per capita alone, and identify the main insight you want readers to remember.]**
+
+### Limitations
+
+This is a descriptive comparison of a single year and cannot establish causation. Its results depend on the four indicators selected and on excluding economies with missing data. The sample includes World Bank economies and territories, not exclusively sovereign states. Unusually extreme observations can influence the covariance matrix and, therefore, the distance results. The analysis does not establish regulatory similarity or identify desirable investment destinations.
+
+**SDG relevance:** Imports and exports provide context for discussing international trade and Sustainable Development Goal 17. The report does not directly measure the official Target 17.11 indicator, developing countries' share of global exports.
 
 ## Sources and research credit
 
