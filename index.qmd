@@ -414,94 +414,102 @@ In the baseline results, **Australia, Norway, and the United Kingdom** are the t
 
 At the other end, **Venezuela, Djibouti, and Hong Kong SAR, China** have the greatest distances. The fact that Luxembourg also appears among the most distant illustrates an important point: the distance measure does not simply separate rich from poor economies. Very high shares of international trade can contribute to a distinctive economic profile.
 
-### Interactive comparison of the extremes
+### Interactive comparison: closest and most distant economies
 
-**Economic Distance from the United States (2019)**
-
-*Mahalanobis distance using GDP per capita, inflation, imports, and exports*
-
-This lollipop chart follows the notebook and includes the United States at distance zero as the reference point. The five nearest and five most distant other economies are shown alongside it.
+The updated notebook presents two separate interactive charts to make the extremes easier to read. The United States is included as the zero-distance reference point in the closest-economies chart. Both charts reuse the distances calculated above rather than recalculating the covariance matrix.
 
 ```{python}
-#| label: distance-chart
+#| label: distance-visual-selection
 import plotly.graph_objects as go
 
-X = plot_df[cols].to_numpy(dtype=float)
-cov_matrix = np.cov(X, rowvar=False)
-inverse_covariance = np.linalg.inv(cov_matrix)
-
-# 2. Locate the United States reference values
-us_vector = plot_df.loc[
-    plot_df["country"] == "United States", cols
-].iloc[0].to_numpy(dtype=float)
-
-# 3. Compute distance metric mapping
-plot_df["distance_us"] = [
-    distance.mahalanobis(row, us_vector, inverse_covariance)
-    for row in X
-]
-
-# 4. Sort and select top/bottom 5 countries, plus include the US baseline
-ranked = plot_df.sort_values("distance_us")
-
-# Get closest (which will now naturally include the US as the absolute closest at d=0)
-near = ranked.head(6)  # Grab 6 so we get the US plus 5 actual closest
-far = ranked.tail(5)
-
-selection = pd.concat([
-    near.assign(group="Baseline & Closest"),
-    far.assign(group="Most distant")
-]).drop_duplicates(subset=["country"]).sort_values("distance_us", ascending=True)
-
-# 5. Build an interactive Lollipop Plot using plotly.graph_objects
-fig = go.Figure()
-
-# Group data to apply colors correctly
-for group_name, group_color in [("Baseline & Closest", "#277C69"), ("Most distant", "#BA6849")]:
-    group_df = selection[selection["group"] == group_name]
-
-    # Add horizontal line segments (the stems)
-    for _, row in group_df.iterrows():
-        fig.add_trace(go.Scatter(
-            x=[0, row["distance_us"]],
-            y=[row["country"], row["country"]],
-            mode="lines",
-            line=dict(color="lightgray", width=3),
-            showlegend=False,
-            hoverinfo="skip"
-        ))
-
-    # Add the dots (the pops)
-    fig.add_trace(go.Scatter(
-        x=group_df["distance_us"],
-        y=group_df["country"],
-        mode="markers+text",
-        name=group_name,
-        marker=dict(color=group_color, size=14, line=dict(width=1.5, color="black")),
-        text=group_df["distance_us"].apply(lambda val: f" {val:.2f}"),
-        textposition="middle right",
-        hovertemplate="<b>%{y}</b><br>Mahalanobis Distance: %{x:.2f}<extra></extra>"
-    ))
-
-# 6. Customize layout gridlines and dimensions
-fig.update_layout(
-    title="Economic Distance from the United States (2019)",
-    xaxis_title="Mahalanobis distance (higher means more different)",
-    yaxis_title="Country / Economy",
-    template="plotly_white",
-    width=900,
-    height=550,
-    legend_title_text="Relationship Group",
-    margin=dict(l=150, r=80, t=80, b=40),
-    xaxis=dict(showgrid=True, gridcolor='LightGray')
-)
-
-# Title and subtitle are displayed as page text above this chart.
-fig.update_layout(title=None, margin=dict(l=75, r=45, t=35, b=65))
-fig.show()
+ranked_with_us = complete.sort_values("distance_us")
+near = ranked_with_us.head(6).copy()  # United States plus five closest economies
+far = ranked_with_us.tail(5).copy().sort_values("distance_us", ascending=True)
 ```
 
-These distances are relative comparisons, **not percentages or probabilities**. A score of 6, for example, does not mean an economy is six times poorer, richer, or less developed than the United States.
+**Economic Similarity: Closest Economies to the United States**
+
+*2019 | Mahalanobis distance based on GDP per capita, inflation, imports, and exports*
+
+```{python}
+#| label: closest-economies-chart
+fig_near = go.Figure()
+for _, row in near.iterrows():
+    fig_near.add_trace(go.Scatter(
+        x=[0, row["distance_us"]],
+        y=[row["country"], row["country"]],
+        mode="lines",
+        line=dict(color="lightgray", width=3),
+        showlegend=False,
+        hoverinfo="skip"
+    ))
+
+fig_near.add_trace(go.Scatter(
+    x=near["distance_us"],
+    y=near["country"],
+    mode="markers+text",
+    marker=dict(color="#277C69", size=14, line=dict(width=1.5, color="black")),
+    text=near["distance_us"].apply(lambda val: f" {val:.2f}"),
+    textposition="middle right",
+    hovertemplate="<b>%{y}</b><br>Mahalanobis Distance: %{x:.2f}<extra></extra>",
+    showlegend=False
+))
+fig_near.update_layout(
+    title=None,
+    xaxis_title="Mahalanobis distance (lower = more similar)",
+    yaxis_title="Economy",
+    template="plotly_white",
+    height=390,
+    margin=dict(l=130, r=65, t=28, b=65),
+    xaxis=dict(showgrid=True, gridcolor="LightGray")
+)
+fig_near.update_xaxes(showline=True, linewidth=0.1, linecolor="lightgray", mirror=True)
+fig_near.update_yaxes(showline=True, linewidth=0.1, linecolor="lightgray", mirror=True)
+fig_near.show()
+```
+
+**Economic Dissimilarity: Most Distant Economies from the United States**
+
+*2019 | Mahalanobis distance based on GDP per capita, inflation, imports, and exports*
+
+```{python}
+#| label: most-distant-economies-chart
+fig_far = go.Figure()
+for _, row in far.iterrows():
+    fig_far.add_trace(go.Scatter(
+        x=[0, row["distance_us"]],
+        y=[row["country"], row["country"]],
+        mode="lines",
+        line=dict(color="lightgray", width=3),
+        showlegend=False,
+        hoverinfo="skip"
+    ))
+
+fig_far.add_trace(go.Scatter(
+    x=far["distance_us"],
+    y=far["country"],
+    mode="markers+text",
+    marker=dict(color="#BA6849", size=14, line=dict(width=1.5, color="black")),
+    text=far["distance_us"].apply(lambda val: f" {val:.2f}"),
+    textposition="middle right",
+    hovertemplate="<b>%{y}</b><br>Mahalanobis Distance: %{x:.2f}<extra></extra>",
+    showlegend=False
+))
+fig_far.update_layout(
+    title=None,
+    xaxis_title="Mahalanobis distance (higher = more distant)",
+    yaxis_title="Economy",
+    template="plotly_white",
+    height=390,
+    margin=dict(l=130, r=65, t=28, b=65),
+    xaxis=dict(showgrid=True, gridcolor="LightGray")
+)
+fig_far.update_xaxes(showline=True, linewidth=0.1, linecolor="lightgray", mirror=True)
+fig_far.update_yaxes(showline=True, linewidth=0.1, linecolor="lightgray", mirror=True)
+fig_far.show()
+```
+
+These distances are relative comparisons, **not percentages or probabilities**. A score of 6 does not mean an economy is six times poorer, richer, or less developed than the United States.
 
 ### What should we be careful about?
 
