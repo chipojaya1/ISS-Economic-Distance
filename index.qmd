@@ -102,7 +102,7 @@ fig = px.histogram(
     plot_df,
     x="gdp_per_capita",
     nbins=28,
-    color_discrete_sequence=["#277C69"],
+    color_discrete_sequence=["lightblue"],
     title="GDP per capita varied widely in 2019"
 )
 
@@ -136,6 +136,8 @@ fig.add_vline(
 
 # Title and subtitle are displayed as page text above this chart.
 fig.update_layout(title=None, margin=dict(l=75, r=45, t=35, b=65))
+fig.update_xaxes(showline=True, linewidth=0.1, linecolor="lightgray", mirror=True)
+fig.update_yaxes(showline=True, linewidth=0.1, linecolor="lightgray", mirror=True)
 fig.show()
 ```
 
@@ -162,7 +164,7 @@ fig = px.histogram(
     inflation_visible,
     x="inflation",
     nbins=25,
-    color_discrete_sequence=["#277C69"],
+    color_discrete_sequence=["lightblue"],
     title="How Inflation Rates Differed Across Economies"
 )
 
@@ -187,6 +189,8 @@ fig.update_layout(
 
 # Title and subtitle are displayed as page text above this chart.
 fig.update_layout(title=None, margin=dict(l=75, r=45, t=35, b=65))
+fig.update_xaxes(showline=True, linewidth=0.1, linecolor="lightgray", mirror=True)
+fig.update_yaxes(showline=True, linewidth=0.1, linecolor="lightgray", mirror=True)
 fig.show()
 print(f"Note: {outside_count} of {len(plot_df)} economies fall outside the displayed range (-10% to 30%). All observations remain in the analysis.")
 ```
@@ -211,7 +215,7 @@ fig = px.histogram(
     plot_df,
     x="imports",
     nbins=24,
-    color_discrete_sequence=["#277C69"],
+    color_discrete_sequence=["lightblue"],
     title="How Much Economies Import Relative to Their Size"
 )
 
@@ -243,6 +247,8 @@ fig.update_layout(
 
 # Title and subtitle are displayed as page text above this chart.
 fig.update_layout(title=None, margin=dict(l=75, r=45, t=35, b=65))
+fig.update_xaxes(showline=True, linewidth=0.1, linecolor="lightgray", mirror=True)
+fig.update_yaxes(showline=True, linewidth=0.1, linecolor="lightgray", mirror=True)
 fig.show()
 ```
 
@@ -264,7 +270,7 @@ fig = px.histogram(
     plot_df,
     x="exports",
     nbins=24,
-    color_discrete_sequence=["#277C69"],
+    color_discrete_sequence=["lightblue"],
     title="How Much Economies Export Relative to Their Size"
 )
 
@@ -296,6 +302,8 @@ fig.update_layout(
 
 # Title and subtitle are displayed as page text above this chart.
 fig.update_layout(title=None, margin=dict(l=75, r=45, t=35, b=65))
+fig.update_xaxes(showline=True, linewidth=0.1, linecolor="lightgray", mirror=True)
+fig.update_yaxes(showline=True, linewidth=0.1, linecolor="lightgray", mirror=True)
 fig.show()
 ```
 
@@ -339,7 +347,7 @@ fig.update_layout(
 )
 
 # Title and subtitle are displayed as page text above this chart.
-fig.update_layout(title=None, margin=dict(l=75, r=45, t=35, b=65))
+fig.update_layout(title=None, margin=dict(l=40, r=40, t=35, b=40))
 fig.show()
 ```
 
