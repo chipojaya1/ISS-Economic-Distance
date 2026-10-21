@@ -18,6 +18,41 @@ execute:
 This single-page Python report follows the data preparation, variable definitions, descriptive analysis, correlation analysis, and Mahalanobis-distance workflow in [the updated Python notebook](https://github.com/chipojaya1/ISS-Economic-Distance/blob/main/Economic_distance_analysis.ipynb). The report adapts an original collaborative empirical project by **Chipo Jaya and Xianghan Zhu**. It provides context for SDG 17 but does **not** directly measure official Target 17.11.
 :::
 
+The paper by Berry, Guillen, and Zhou (2010) proposes an institutional approach to measuring distance
+between countries. In this report, we analyze the institutional distance between the United States and the
+rest of the world using the economic distance method. We chose economic distance because it measures
+the differences in economic indicators between countries. Berry et al. (2010) define Economic Distance as
+the economic performance and structure difference between countries. They measured using the following
+indicators: GDP per capita, inflation rates, and trade intensity. A greater economic distance means more
+significant differences, which can indicate challenges for companies looking to expand internationally.
+
+The key economic indicators mentioned in Berry et al. paper include GDP per capita (income),
+inflation, and trade intensity. We collected our data from World Development Indicators (WDI). Under the
+economics scale, we use four sub-components, which are:
+  **Inflation**: the inflation rate of each country in 2019 compared with the previous year.
+  **GDP per capita**: the real income of every country.
+  **Imports**: the proportion of imported goods as a percentage of GDP.
+  **Exports**: the proportion of exported goods as a percentage of GDP.
+
+By definition, larger institutional distances indicate significant disparities between countries in
+terms of regulations, economic structures, and cultural norms, which can introduce greater complexity
+and risk for multinational corporations (MNCs). When entering such markets, MNCs are likely to face
+more obstacles in adapting to local legal and regulatory frameworks, which may require extensive
+adjustments to their products, services, and operational strategies. These differences not only raise
+compliance costs but also increase the uncertainty around market behavior, making it harder for MNCs to
+predict and manage market dynamics effectively. Furthermore, navigating such diverse institutional
+environments can result in additional managerial challenges, requiring more sophisticated coordination
+efforts, governance structures, and localized expertise to operate smoothly across borders.
+
+On the other hand, smaller institutional distances reflect a higher degree of similarity between the
+home and host countries, leading to reduced risks and operational challenges for MNCs. In such cases,
+firms may find it easier to enter and operate in foreign markets because they are more familiar with the
+local regulations, economic systems, and market operations. This familiarity minimizes the need for
+significant adaptations, lowering the cost of entry and streamlining operations. Additionally, managing
+across countries with similar institutional frameworks is less complex, allowing for smoother coordination
+and greater efficiency in governance, which in turn enhances the overall ease of doing business in the
+foreign market.
+
 ## 1. Research question and data
 
 **How do income, inflation, and international trade contribute to economic distance between the United States and other economies in 2019?**
@@ -26,16 +61,21 @@ The data come from the [World Bank World Development Indicators](https://databan
 
 ```{python}
 #| label: data-preparation
+# Load libraries
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 import seaborn as sns
-from scipy.spatial.distance import mahalanobis
-from IPython.display import display
-
-sns.set_theme(style="whitegrid")
+import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
+import matplotlib.patches as mpatches
 import plotly.express as px
 import plotly.graph_objects as go
+
+from scipy.spatial import distance
+sns.set_theme(style="darkgrid", context="notebook")
+
+from scipy.spatial.distance import mahalanobis
+from IPython.display import display
 from scipy.spatial import distance
 cols = ["gdp_per_capita","inflation","imports","exports"]
 # Plotly is embedded directly in the HTML report.
@@ -73,7 +113,7 @@ coverage = pd.DataFrame({
 display(coverage)
 ```
 
-## 3. Exploratory data analysis
+## 3. Distribution curves of the Four Economic Indicators
 
 The following descriptive statistics use the **182 economies with complete data** on all four measures, matching the sample used for the distance calculations. The notebook also reports descriptive statistics before excluding incomplete observations; those initial figures have different sample sizes by indicator.
 
@@ -91,7 +131,7 @@ display(complete[features].describe().T[
 
 ```{python}
 #| label: distribution-gdp
-import plotly.express as px
+
 
 # Calculate summary metrics
 mean_val = plot_df["gdp_per_capita"].mean()
@@ -148,6 +188,10 @@ GDP per capita varies greatly across economies. Most have relatively low economi
 **How Inflation Rates Differed Across Economies**
 
 *2019 | economies within −10% to 30% are shown; all observations are retained in the analysis*
+
+## Implications for Global Inequality: 
+The skewed distributions suggest that there is a large inequality in economic indicators among countries. Many countries seem to cluster around low or moderate values, while only a few countries have extremely high values for these variables. The large right skew in the distributions implies that a small number of countries dominate the global economy in
+terms of GDP, exports, and imports.
 
 ```{python}
 #| label: distribution-inflation
@@ -394,9 +438,9 @@ These differences highlight the importance of considering how unusual observatio
 
 A simple comparison might focus on how far two economies differ in each indicator. However, GDP per capita is measured in dollars while the other indicators are percentages. Imports and exports also tend to move together. **Mahalanobis distance** takes these differences in scale and the relationships between indicators into account, allowing us to summarize the four measures in one comparison.
 
-$
+$$
 D(x,US)=\sqrt{(x-x_{US})^T S^{-1}(x-x_{US})}
-$
+$$
 
 Here $S$ is the covariance matrix calculated from the same complete-case sample. The United States is the reference economy, so its distance from itself is zero. **Smaller distances indicate greater similarity to the United States across these four selected indicators; they do not imply better economic performance.**
 
