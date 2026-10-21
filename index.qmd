@@ -126,8 +126,6 @@ display(complete[features].describe().T[
 
 ### GDP per capita — economic output per person
 
-*2019 | 182 economies with complete data | constant 2015 US$ per person*
-
 ```{python}
 #| label: distribution-gdp
 # Calculate summary metrics
@@ -148,8 +146,9 @@ fig.update_layout(
     xaxis_title="GDP per capita (constant 2015 US$)",
     yaxis_title="Number of economies",
     template="plotly_white",
-    width=850,
-    height=450,
+    autosize=True,
+    height=535,
+    margin=dict(l=82, r=65, t=125, b=85),
     showlegend=False
 )
 
@@ -175,14 +174,26 @@ fig.add_vline(
     annotation_position="top left"
 )
 
-fig.show()
+# Reserve dedicated space for the plot title and subtitle inside Plotly.
+# Let the chart resize to the width of the website column; do not force
+# the fixed 850px notebook width that can overflow narrower screens.
+fig.update_xaxes(automargin=True)
+fig.update_yaxes(automargin=True)
+
+# Consistent, web-friendly plot layout while preserving the notebook data and traces.
+fig.update_layout(
+    title=dict(x=0, xanchor="left", y=0.98, yanchor="top", pad=dict(b=18), font=dict(size=20)),
+    font=dict(size=14),
+    paper_bgcolor="white",
+    plot_bgcolor="white",
+)
+
+fig.show(config={"responsive": True})
 ```
 
 GDP per capita varies greatly across economies. Most have relatively low economic output per person, while a much smaller group has considerably higher values. This difference highlights the unequal distribution of economic resources and productive capacity across the world.
 
 ### Inflation — how quickly prices were changing
-
-*2019 | economies within −10% to 30% are shown; all observations are retained in the analysis*
 
 ## Implications for Global Inequality: 
 The skewed distributions suggest that there is a large inequality in economic indicators among countries. Many countries seem to cluster around low or moderate values, while only a few countries have extremely high values for these variables. The large right skew in the distributions implies that a small number of countries dominate the global economy in
@@ -221,8 +232,9 @@ fig.update_layout(
     xaxis_title="GDP-deflator inflation (annual %)",
     yaxis_title="Number of economies",
     template="plotly_white",
-    width=850,
-    height=450,
+    autosize=True,
+    height=535,
+    margin=dict(l=82, r=65, t=125, b=85),
     xaxis_range=[inflation_display_min, inflation_display_max]
 )
 
@@ -230,7 +242,16 @@ fig.update_layout(
 fig.update_xaxes(showline=True, linewidth=0.1, linecolor='lightgray', mirror=True)
 fig.update_yaxes(showline=True, linewidth=0.1, linecolor='lightgray', mirror=True)
 
-fig.show()
+
+# Consistent, web-friendly plot layout while preserving the notebook data and traces.
+fig.update_layout(
+    title=dict(x=0, xanchor="left", y=0.98, yanchor="top", pad=dict(b=18), font=dict(size=20)),
+    font=dict(size=14),
+    paper_bgcolor="white",
+    plot_bgcolor="white",
+)
+
+fig.show(config={"responsive": True})
 print(f"Note: {outside_count} of {len(plot_df)} economies fall outside the displayed range (-10% to 30%). All observations remain in the analysis.")
 ```
 
@@ -239,8 +260,6 @@ Most economies experienced relatively modest inflation in 2019. However, some ex
 The focused inflation chart excludes the extremes **from the display only**, not from any distance calculations.
 
 ### Imports — goods and services bought from abroad
-
-*2019 | imports of goods and services as a percentage of GDP*
 
 ```{python}
 #| label: distribution-imports
@@ -277,8 +296,9 @@ fig.update_layout(
     xaxis_title="Imports of goods and services (% of GDP)",
     yaxis_title="Number of economies",
     template="plotly_white",
-    width=850,
-    height=450,
+    autosize=True,
+    height=535,
+    margin=dict(l=82, r=65, t=125, b=85),
     xaxis_range=[0, 220]
 )
 
@@ -286,14 +306,21 @@ fig.update_layout(
 fig.update_xaxes(showline=True, linewidth=0.1, linecolor='lightgray', mirror=True)
 fig.update_yaxes(showline=True, linewidth=0.1, linecolor='lightgray', mirror=True)
 
-fig.show()
+
+# Consistent, web-friendly plot layout while preserving the notebook data and traces.
+fig.update_layout(
+    title=dict(x=0, xanchor="left", y=0.98, yanchor="top", pad=dict(b=18), font=dict(size=20)),
+    font=dict(size=14),
+    paper_bgcolor="white",
+    plot_bgcolor="white",
+)
+
+fig.show(config={"responsive": True})
 ```
 
 Economies differ in how much they purchase from the rest of the world relative to the size of their economies. Some rely more heavily on international goods and services, while others import a smaller share of their GDP.
 
 ### Exports — goods and services sold abroad
-
-*2019 | exports of goods and services as a percentage of GDP*
 
 ```{python}
 #| label: distribution-exports
@@ -330,8 +357,9 @@ fig.update_layout(
     xaxis_title="Exports of goods and services (% of GDP)",
     yaxis_title="Number of economies",
     template="plotly_white",
-    width=850,
-    height=450,
+    autosize=True,
+    height=535,
+    margin=dict(l=82, r=65, t=125, b=85),
     xaxis_range=[0, 220]
 )
 
@@ -339,14 +367,21 @@ fig.update_layout(
 fig.update_xaxes(showline=True, linewidth=0.1, linecolor='lightgray', mirror=True)
 fig.update_yaxes(showline=True, linewidth=0.1, linecolor='lightgray', mirror=True)
 
-fig.show()
+
+# Consistent, web-friendly plot layout while preserving the notebook data and traces.
+fig.update_layout(
+    title=dict(x=0, xanchor="left", y=0.98, yanchor="top", pad=dict(b=18), font=dict(size=20)),
+    font=dict(size=14),
+    paper_bgcolor="white",
+    plot_bgcolor="white",
+)
+
+fig.show(config={"responsive": True})
 ```
 
 Exports also vary considerably. Some economies sell a much larger share of their goods and services internationally than others. This illustrates differences in how strongly economies participate in international trade.
 
 ### How the indicators relate
-
-*Pearson correlations across four economic indicators, 2019*
 
 ```{python}
 #| label: correlations
@@ -363,7 +398,7 @@ fig = px.imshow(
     correlations,
     x=labels,
     y=labels,
-    color_continuous_scale="BrBG",
+    color_continuous_scale="RdBu_r",
     zmin=-1,
     zmax=1,
     text_auto=".2f",
@@ -373,13 +408,22 @@ fig = px.imshow(
 # Update layout with formatting matching the style requirements
 fig.update_layout(
     title_x=0,
-    width=600,
-    height=550,
+    autosize=True,
+    height=570,
     coloraxis_colorbar=dict(title="Correlation"),
-    margin=dict(l=40, r=40, t=80, b=40)
+    margin=dict(l=95, r=65, t=115, b=95)
 )
 
-fig.show()
+
+# Consistent, web-friendly plot layout while preserving the notebook data and traces.
+fig.update_layout(
+    title=dict(x=0, xanchor="left", y=0.98, yanchor="top", pad=dict(b=18), font=dict(size=20)),
+    font=dict(size=14),
+    paper_bgcolor="white",
+    plot_bgcolor="white",
+)
+
+fig.show(config={"responsive": True})
 ```
 
 The heatmap shows how the four economic indicators relate to one another across economies in 2019.
@@ -483,8 +527,6 @@ near = ranked_plot.head(6) # US + 5 actual closest
 far = ranked_plot.tail(5) # 5 furthest
 ```
 
-*2019 | Mahalanobis distance based on GDP per capita, inflation, imports, and exports*
-
 ```{python}
 #| label: closest-economies-chart
 # --- Visual 1: Closest Economies ---
@@ -515,9 +557,9 @@ fig_closest.update_layout(
     xaxis_title="Mahalanobis distance<br><sup>(lower score = more similar)</sup>",
     yaxis_title="Country",
     template="plotly_white",
-    width=900,
-    height=350,
-    margin=dict(l=150, r=80, t=80, b=40),
+    autosize=True,
+    height=440,
+    margin=dict(l=145, r=95, t=120, b=85),
     xaxis=dict(showgrid=True, gridcolor='LightGray')
 )
 
@@ -525,10 +567,17 @@ fig_closest.update_layout(
 fig_closest.update_xaxes(showline=True, linewidth=0.1, linecolor='lightgray', mirror=True)
 fig_closest.update_yaxes(showline=True, linewidth=0.1, linecolor='lightgray', mirror=True)
 
-fig_closest.show()
-```
 
-*2019 | Mahalanobis distance based on GDP per capita, inflation, imports, and exports*
+# Consistent, web-friendly plot layout while preserving the notebook data and traces.
+fig_closest.update_layout(
+    title=dict(x=0, xanchor="left", y=0.98, yanchor="top", pad=dict(b=18), font=dict(size=20)),
+    font=dict(size=14),
+    paper_bgcolor="white",
+    plot_bgcolor="white",
+)
+
+fig_closest.show(config={"responsive": True})
+```
 
 ```{python}
 #| label: most-distant-economies-chart
@@ -560,9 +609,9 @@ fig_distant.update_layout(
     xaxis_title="Mahalanobis distance<br><sup>(higher score = more distant)</sup>",
     yaxis_title="Country",
     template="plotly_white",
-    width=900,
-    height=350,
-    margin=dict(l=150, r=80, t=80, b=40),
+    autosize=True,
+    height=440,
+    margin=dict(l=145, r=95, t=120, b=85),
     xaxis=dict(showgrid=True, gridcolor='LightGray')
 )
 
@@ -570,7 +619,16 @@ fig_distant.update_layout(
 fig_distant.update_xaxes(showline=True, linewidth=0.1, linecolor='lightgray', mirror=True)
 fig_distant.update_yaxes(showline=True, linewidth=0.1, linecolor='lightgray', mirror=True)
 
-fig_distant.show()
+
+# Consistent, web-friendly plot layout while preserving the notebook data and traces.
+fig_distant.update_layout(
+    title=dict(x=0, xanchor="left", y=0.98, yanchor="top", pad=dict(b=18), font=dict(size=20)),
+    font=dict(size=14),
+    paper_bgcolor="white",
+    plot_bgcolor="white",
+)
+
+fig_distant.show(config={"responsive": True})
 ```
 
 These distances are relative comparisons, **not percentages or probabilities**. A score of 6 does not mean an economy is six times poorer, richer, or less developed than the United States.
