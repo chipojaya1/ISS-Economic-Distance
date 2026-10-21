@@ -123,270 +123,101 @@ The following descriptive statistics use the **182 economies with complete data*
 display(complete[features].describe().T[
     ["count","mean","50%","std","min","max"]].rename(columns={"50%":"median"}).round(2))
 ```
-
-### GDP per capita — economic output per person
-
 ```{python}
-#| label: distribution-gdp
-# Calculate summary metrics
-mean_val = plot_df["gdp_per_capita"].mean()
-median_val = plot_df["gdp_per_capita"].median()
+#| label: distributions
+# Calculate metrics for the combined plots
+gdp_mean = plot_df["gdp_per_capita"].mean()
+gdp_median = plot_df["gdp_per_capita"].median()
 
-# Create interactive Plotly Histogram
-fig = px.histogram(
-    plot_df,
-    x="gdp_per_capita",
-    nbins=28,
-    color_discrete_sequence=["lightblue"],
-    title="<b>GDP per capita varied widely in 2019</b><br><sup>2019 | 182 economies with complete data | constant 2015 US$ per person</sup>"
-)
+overall_median_inf = plot_df["inflation"].median()
 
-# Customize layout and add vertical lines for mean/median
-fig.update_layout(
-    xaxis_title="GDP per capita (constant 2015 US$)",
-    yaxis_title="Number of economies",
-    template="plotly_white",
-    autosize=True,
-    height=535,
-    margin=dict(l=82, r=65, t=125, b=85),
-    showlegend=False
-)
-
-# Add baseline axis lines
-fig.update_xaxes(showline=True, linewidth=0.1, linecolor='lightgray', mirror=True)
-fig.update_yaxes(showline=True, linewidth=0.1, linecolor='lightgray', mirror=True)
-
-# Add Mean Line
-fig.add_vline(
-    x=mean_val,
-    line_dash="dash",
-    line_color="#C65D43",
-    annotation_text=f"Mean: ${mean_val:,.0f}",
-    annotation_position="top right"
-)
-
-# Add Median Line
-fig.add_vline(
-    x=median_val,
-    line_dash="dashdot",
-    line_color="#34495E",
-    annotation_text=f"Median: ${median_val:,.0f}",
-    annotation_position="top left"
-)
-
-# Reserve dedicated space for the plot title and subtitle inside Plotly.
-# Let the chart resize to the width of the website column; do not force
-# the fixed 850px notebook width that can overflow narrower screens.
-fig.update_xaxes(automargin=True)
-fig.update_yaxes(automargin=True)
-
-# Consistent, web-friendly plot layout while preserving the notebook data and traces.
-fig.update_layout(
-    title=dict(x=0, xanchor="left", y=0.98, yanchor="top", pad=dict(b=18), font=dict(size=20)),
-    font=dict(size=14),
-    paper_bgcolor="white",
-    plot_bgcolor="white",
-)
-
-fig.show(config={"responsive": True})
-```
-
-GDP per capita varies greatly across economies. Most have relatively low economic output per person, while a much smaller group has considerably higher values. This difference highlights the unequal distribution of economic resources and productive capacity across the world.
-
-### Inflation — how quickly prices were changing
-
-## Implications for Global Inequality: 
-The skewed distributions suggest that there is a large inequality in economic indicators among countries. Many countries seem to cluster around low or moderate values, while only a few countries have extremely high values for these variables. The large right skew in the distributions implies that a small number of countries dominate the global economy in
-terms of GDP, exports, and imports.
-
-```{python}
-#| label: distribution-inflation
-# Filter data for display purposes (retaining all observations in dataset)
-inflation_display_min = -10
-inflation_display_max = 30
-
-inflation_visible = plot_df[plot_df["inflation"].between(inflation_display_min, inflation_display_max)].copy()
-outside_count = len(plot_df) - len(inflation_visible)
-overall_median = plot_df["inflation"].median()
-
-# Create interactive Plotly Histogram
-fig = px.histogram(
-    inflation_visible,
-    x="inflation",
-    nbins=25,
-    color_discrete_sequence=["lightblue"],
-    title=f"<b>How Inflation Rates Differed Across Economies</b><br><sup>2019 | {len(inflation_visible)} of {len(plot_df)} economies shown ({inflation_display_min}% to {inflation_display_max}%)</sup>"
-)
-
-# Add vertical line for overall median
-fig.add_vline(
-    x=overall_median,
-    line_dash="dash",
-    line_color="#34495E",
-    annotation_text=f"Overall median: {overall_median:.1f}%",
-    annotation_position="top right"
-)
-
-# Customize layout
-fig.update_layout(
-    xaxis_title="GDP-deflator inflation (annual %)",
-    yaxis_title="Number of economies",
-    template="plotly_white",
-    autosize=True,
-    height=535,
-    margin=dict(l=82, r=65, t=125, b=85),
-    xaxis_range=[inflation_display_min, inflation_display_max]
-)
-
-# Add baseline axis lines
-fig.update_xaxes(showline=True, linewidth=0.1, linecolor='lightgray', mirror=True)
-fig.update_yaxes(showline=True, linewidth=0.1, linecolor='lightgray', mirror=True)
-
-
-# Consistent, web-friendly plot layout while preserving the notebook data and traces.
-fig.update_layout(
-    title=dict(x=0, xanchor="left", y=0.98, yanchor="top", pad=dict(b=18), font=dict(size=20)),
-    font=dict(size=14),
-    paper_bgcolor="white",
-    plot_bgcolor="white",
-)
-
-fig.show(config={"responsive": True})
-print(f"Note: {outside_count} of {len(plot_df)} economies fall outside the displayed range (-10% to 30%). All observations remain in the analysis.")
-```
-
-Most economies experienced relatively modest inflation in 2019. However, some experienced exceptionally high inflation rates. These extreme cases show that economic conditions differed substantially across economies, particularly in terms of price stability.
-
-The focused inflation chart excludes the extremes **from the display only**, not from any distance calculations.
-
-### Imports — goods and services bought from abroad
-
-```{python}
-#| label: distribution-imports
 imports_mean = plot_df["imports"].mean()
 imports_median = plot_df["imports"].median()
 
-# Create interactive Plotly Histogram
-fig = px.histogram(
-    plot_df,
-    x="imports",
-    nbins=24,
-    color_discrete_sequence=["lightblue"],
-    title="<b>How Much Economies Import Relative to Their Size</b><br><sup>2019 | Imports of goods and services as a percentage of GDP</sup>"
-)
-
-# Add lines for mean and median
-fig.add_vline(
-    x=imports_mean,
-    line_dash="dash",
-    line_color="#C65D43",
-    annotation_text=f"Mean: {imports_mean:.1f}%",
-    annotation_position="top right"
-)
-
-fig.add_vline(
-    x=imports_median,
-    line_dash="dashdot",
-    line_color="#34495E",
-    annotation_text=f"Median: {imports_median:.1f}%",
-    annotation_position="top left"
-)
-
-fig.update_layout(
-    xaxis_title="Imports of goods and services (% of GDP)",
-    yaxis_title="Number of economies",
-    template="plotly_white",
-    autosize=True,
-    height=535,
-    margin=dict(l=82, r=65, t=125, b=85),
-    xaxis_range=[0, 220]
-)
-
-# Add baseline axis lines
-fig.update_xaxes(showline=True, linewidth=0.1, linecolor='lightgray', mirror=True)
-fig.update_yaxes(showline=True, linewidth=0.1, linecolor='lightgray', mirror=True)
-
-
-# Consistent, web-friendly plot layout while preserving the notebook data and traces.
-fig.update_layout(
-    title=dict(x=0, xanchor="left", y=0.98, yanchor="top", pad=dict(b=18), font=dict(size=20)),
-    font=dict(size=14),
-    paper_bgcolor="white",
-    plot_bgcolor="white",
-)
-
-fig.show(config={"responsive": True})
-```
-
-Economies differ in how much they purchase from the rest of the world relative to the size of their economies. Some rely more heavily on international goods and services, while others import a smaller share of their GDP.
-
-### Exports — goods and services sold abroad
-
-```{python}
-#| label: distribution-exports
 exports_mean = plot_df["exports"].mean()
 exports_median = plot_df["exports"].median()
 
-# Create interactive Plotly Histogram
-fig = px.histogram(
-    plot_df,
-    x="exports",
-    nbins=24,
-    color_discrete_sequence=["lightblue"],
-    title="<b>How Much Economies Export Relative to Their Size</b><br><sup>2019 | Exports of goods and services as a percentage of GDP</sup>"
+# Initialize a 2x2 subplot grid
+fig = make_subplots(
+    rows=2, cols=2,
+    subplot_titles=(
+        "<b>GDP per capita across Economies </b>",
+        "<b>How Inflation Rates Differed Across Economies </b>",
+        "<b>How Much Economies Import Relative to Their Size</b>",
+        "<b>How Much Economies Import Relative to Their Size</b>"
+    ),
+    vertical_spacing=0.15,
+    horizontal_spacing=0.1
 )
 
-# Add lines for mean and median
-fig.add_vline(
-    x=exports_mean,
-    line_dash="dash",
-    line_color="#C65D43",
-    annotation_text=f"Mean: {exports_mean:.1f}%",
-    annotation_position="top right"
+# 1. GDP per Capita Histogram
+fig.add_trace(
+    go.Histogram(x=plot_df["gdp_per_capita"], nbinsx=28, marker_color="lightblue", showlegend=False),
+    row=1, col=1
 )
+fig.add_vline(x=gdp_mean, line_dash="dash", line_color="#C65D43", row=1, col=1)
+fig.add_vline(x=gdp_median, line_dash="dashdot", line_color="#34495E", row=1, col=1)
 
-fig.add_vline(
-    x=exports_median,
-    line_dash="dashdot",
-    line_color="#34495E",
-    annotation_text=f"Median: {exports_median:.1f}%",
-    annotation_position="top left"
+# 2. Inflation Rate Histogram (Within -10 to 30 range)
+inflation_visible = plot_df[plot_df["inflation"].between(-10, 30)]
+fig.add_trace(
+    go.Histogram(x=inflation_visible["inflation"], nbinsx=25, marker_color="lightblue", showlegend=False),
+    row=1, col=2
 )
+fig.add_vline(x=overall_median_inf, line_dash="dash", line_color="#34495E", row=1, col=2)
 
+# 3. Imports Histogram
+fig.add_trace(
+    go.Histogram(x=plot_df["imports"], nbinsx=24, marker_color="lightblue", showlegend=False),
+    row=2, col=1
+)
+fig.add_vline(x=imports_mean, line_dash="dash", line_color="#C65D43", row=2, col=1)
+fig.add_vline(x=imports_median, line_dash="dashdot", line_color="#34495E", row=2, col=1)
+
+# 4. Exports Histogram
+fig.add_trace(
+    go.Histogram(x=plot_df["exports"], nbinsx=24, marker_color="lightblue", showlegend=False),
+    row=2, col=2
+)
+fig.add_vline(x=exports_mean, line_dash="dash", line_color="#C65D43", row=2, col=2)
+fig.add_vline(x=exports_median, line_dash="dashdot", line_color="#34495E", row=2, col=2)
+
+# Global layout and style properties
 fig.update_layout(
-    xaxis_title="Exports of goods and services (% of GDP)",
-    yaxis_title="Number of economies",
+    title_text="<b>Distribution of Key Economic Indicators (2019)</b>",
     template="plotly_white",
-    autosize=True,
-    height=535,
-    margin=dict(l=82, r=65, t=125, b=85),
-    xaxis_range=[0, 220]
+    width=1000,
+    height=800,
+    margin=dict(l=50, r=50, t=100, b=50)
 )
 
-# Add baseline axis lines
+# Configure axis baselines and titles
+fig.update_xaxes(title_text="constant 2015 US$", row=1, col=1)
+fig.update_xaxes(title_text="annual %", row=1, col=2)
+fig.update_xaxes(title_text="% of GDP", row=2, col=1)
+fig.update_xaxes(title_text="% of GDP", row=2, col=2)
+
+fig.update_yaxes(title_text="Number of economies", row=1, col=1)
+fig.update_yaxes(title_text="Number of economies", row=2, col=1)
+
+# Apply the unified borderline style to both axes
 fig.update_xaxes(showline=True, linewidth=0.1, linecolor='lightgray', mirror=True)
 fig.update_yaxes(showline=True, linewidth=0.1, linecolor='lightgray', mirror=True)
 
-
-# Consistent, web-friendly plot layout while preserving the notebook data and traces.
-fig.update_layout(
-    title=dict(x=0, xanchor="left", y=0.98, yanchor="top", pad=dict(b=18), font=dict(size=20)),
-    font=dict(size=14),
-    paper_bgcolor="white",
-    plot_bgcolor="white",
-)
-
-fig.show(config={"responsive": True})
+fig.show()
 ```
+**What we see from the Distibutions of the four Key Economic indicators**
 
-Exports also vary considerably. Some economies sell a much larger share of their goods and services internationally than others. This illustrates differences in how strongly economies participate in international trade.
+GDP per capita varies greatly across economies. Most have relatively low economic output per person, while a much smaller group has considerably higher values. This difference highlights the unequal distribution of economic resources and productive capacity across the world. The focused inflation chart excludes the extremes **from the display only**, not from any distance calculations. Most economies experienced relatively modest inflation in 2019. However, some experienced exceptionally high inflation rates. These extreme cases show that economic conditions differed substantially across economies, particularly in terms of price stability. Looking at the imports economies differ in how much they purchase from the rest of the world relative to the size of their economies. Some rely more heavily on international goods and services, while others import a smaller share of their GDP. Exports also vary considerably. Some economies sell a much larger share of their goods and services internationally than others. This illustrates differences in how strongly economies participate in international trade. The GDP-Deflator Inflation metric provides insight into the relative changes in prices and economic growth, which can greatly impact economic distance. The variation in these indicators sets the stage for deeper analysis, which we'll explore with correlation studies and distance measure
+
+**Implications for Global Inequality** 
+The skewed distributions suggest that there is a large inequality in economic indicators among countries. Many countries seem to cluster around low or moderate values, while only a few countries have extremely high values for these variables. The large right skew in the distributions implies that a small number of countries dominate the global economy in
+terms of GDP, exports, and imports.
 
 ### How the indicators relate
 
 ```{python}
 #| label: correlations
-import plotly.express as px
-
 # Calculate Pearson correlation matrix
 correlations = plot_df[cols].corr(method="pearson")
 
@@ -402,48 +233,30 @@ fig = px.imshow(
     zmin=-1,
     zmax=1,
     text_auto=".2f",
-    title="<b>How the Four Economic Indicators Relate</b>"
+    title="How the Four Economic Indicators Relate"
 )
 
 # Update layout with formatting matching the style requirements
 fig.update_layout(
     title_x=0,
     autosize=True,
-    height=570,
+    height=470,
     coloraxis_colorbar=dict(title="Correlation"),
-    margin=dict(l=95, r=65, t=115, b=95)
-)
-
-
-# Consistent, web-friendly plot layout while preserving the notebook data and traces.
-fig.update_layout(
-    title=dict(x=0, xanchor="left", y=0.98, yanchor="top", pad=dict(b=18), font=dict(size=20)),
-    font=dict(size=14),
-    paper_bgcolor="white",
-    plot_bgcolor="white",
+    margin=dict(l=65, r=65, t=115, b=95)
 )
 
 fig.show(config={"responsive": True})
 ```
 
-The heatmap shows how the four economic indicators relate to one another across economies in 2019.
-
-The strongest relationship is between imports and exports (0.85). This suggests that economies that import more goods and services relative to their GDP also tend to export more. In other words, economies that are more engaged in international trade often have higher levels of both imports and exports.
-
-GDP per capita has a moderate positive relationship with exports (0.48) and a weaker positive relationship with imports (0.27). This suggests that economies with higher economic output per person tend to have somewhat greater participation in international trade, particularly through exports.
-
-Inflation has very weak relationships with the other three indicators. This suggests that differences in inflation do not closely follow differences in GDP per capita or trade activity across the economies studied.
-
-A correlation of 0.85 does not necessarily mean trade causes economic growth or that importing causes exporting. It simply means those two indicators tend to move together across the economies in your dataset.
-
-**Overall, the heatmap shows that the four indicators capture different aspects of economic conditions, although imports and exports are closely related.** This is important for the next stage of the analysis, where Mahalanobis distance is used to measure how economically different each economy is from the United States while accounting for relationships between the indicators.
+The heatmap shows how the four economic indicators relate to one another across economies in 2019. The strongest relationship is between imports and exports (0.85). This suggests that economies that import more goods and services relative to their GDP also tend to export more. In other words, economies that are more engaged in international trade often have higher levels of both imports and exports. GDP per capita has a moderate positive relationship with exports (0.48) and a weaker positive relationship with imports (0.27). This suggests that economies with higher economic output per person tend to have somewhat greater participation in international trade, particularly through exports. 
+Inflation has very weak relationships with the other three indicators. This suggests that differences in inflation do not closely follow differences in GDP per capita or trade activity across the economies studied. 
+A correlation of 0.85 does not necessarily mean trade causes economic growth or that importing causes exporting. It simply means those two indicators tend to move together across the economies in your dataset. Overall, the heatmap shows that the four indicators capture different aspects of economic conditions, although imports and exports are closely related. 
 
 ### Pearson and Spearman: what changes?
 
-**Do the actual values move together in a roughly straight-line pattern?** Pearson uses the numerical values directly and can be strongly influenced by exceptional observations, such as Venezuela's extremely high inflation or economies with unusually large trade shares.
+**Do the actual values move together in a roughly straight-line pattern? Do economies with higher values on one indicator generally rank higher on another?**
 
-**Do economies with higher values on one indicator generally rank higher on another?**
-Spearman focuses on ranks rather than the size of the values. It captures relationships that consistently increase or decrease, even when they do not form a straight line. It is generally less sensitive to extreme numerical values.
+These can be answered using two correlation calculations. Pearson uses the numerical values directly and can be strongly influenced by exceptional observations, such as Venezuela's extremely high inflation or economies with unusually large trade shares. Spearman focuses on ranks rather than the size of the values. It captures relationships that consistently increase or decrease, even when they do not form a straight line. It is generally less sensitive to extreme numerical values.
 
 ```{python}
 #| label: spearman
@@ -456,20 +269,21 @@ print("Spearman correlations:")
 display(spearman_correlations.round(3))
 ```
 
-The Pearson correlation results show that imports and exports have the strongest relationship (0.85). Economies that import more relative to their GDP also tend to export more. GDP per capita is moderately associated with exports (0.48), while inflation shows little linear relationship with the other indicators.
-
-Because the dataset contains some extreme values, Spearman correlations were also examined. The results suggest that certain relationships, particularly those involving inflation, differ when economies are compared by their rankings rather than their actual values.
-
-For example, inflation and exports have almost no linear relationship under Pearson correlation (0.01), but a modest negative relationship under Spearman correlation (−0.31).
-
-These differences highlight the importance of considering how unusual observations may influence the analysis. Pearson correlation remains the primary measure because the subsequent Mahalanobis distance calculation uses the covariance structure of the original indicators.
+The Pearson correlation results show that imports and exports have the strongest relationship (0.85). Economies that import more relative to their GDP also tend to export more. GDP per capita is moderately associated with exports (0.48), while inflation shows little linear relationship with the other indicators. Because the dataset contains some extreme values, Spearman correlations were also examined. The results suggest that certain relationships, particularly those involving inflation, differ when economies are compared by their rankings rather than their actual values. For example, inflation and exports have almost no linear relationship under Pearson correlation (0.01), but a modest negative relationship under Spearman correlation (−0.31). These differences highlight the importance of considering how unusual observations may influence the analysis. Pearson correlation remains the primary measure because the subsequent Mahalanobis distance calculation uses the covariance structure of the original indicators.
 
 
 ## 4. Measuring economic distance
 
 ### Why use Mahalanobis distance?
 
-A simple comparison might focus on how far two economies differ in each indicator. However, GDP per capita is measured in dollars while the other indicators are percentages. Imports and exports also tend to move together. **Mahalanobis distance** takes these differences in scale and the relationships between indicators into account, allowing us to summarize the four measures in one comparison.
+Berry et al. (2010) introduced the Mahalanobis distance method for measuring cross-national
+economic distance, which offers several advantages. It effectively accounts for correlations between
+economic indicators, resulting in a more accurate measure of distance. Additionally, Mahalanobis distance
+adjusts for differences in variance among variables, ensuring that those with larger variances do not skew
+the results. They do not use Euclidean distance because it assumes independence and equal scaling of
+variables, which is often not valid in economic data and can lead to misleading conclusions. Therefore, by
+using Mahalanobis distance, a more robust measure of economic distance is obtained, relavant for
+understanding the challenges faced by multinational companies in various economic environments.
 
 $$
 D(x,US)=\sqrt{(x-x_{US})^T S^{-1}(x-x_{US})}
@@ -495,9 +309,10 @@ print("Five economies furthest from the United States")
 display(furthest.round(3).reset_index(drop=True))
 ```
 
-In the baseline results, **Australia, Norway, and the United Kingdom** are the three closest economies to the United States. Their combined income, inflation, and trade profiles are relatively similar to the US profile according to this measure. Iceland and Canada follow.
+In the baseline results, **Australia, Norway, and the United Kingdom** are the three closest economies in this comparison. Australia has a GDP per capita of about 59 thousand dollars, compared with about 61 thousand in the US. Norway is wealthier per person, while the United Kingdom is lower, yet both still have relatively small overall distances. The point is not that each indicator matches the US. Instead, their combined four-indicator profiles are comparatively similar under this measure.
 
-At the other end, **Venezuela, Djibouti, and Hong Kong SAR, China** have the greatest distances. The fact that Luxembourg also appears among the most distant illustrates an important point: the distance measure does not simply separate rich from poor economies. Very high shares of international trade can contribute to a distinctive economic profile.
+
+At the other end, **Venezuela, Djibouti, and Hong Kong SAR, China** have the greatest distances. They have large distance scores, but for contrasting observed profiles. Venezuela has extremely high GDP-deflator inflation, approximately 21,909 percent, and GDP per capita around 1,759 dollars. Djibouti has much lower inflation, but imports and exports are about 154 and 167 percent of GDP. Hong Kong, despite a relatively high GDP per capita of about 44 thousand dollars, also has exceptionally high trade shares, both above 175 percent of GDP. These observations show why we need to look beyond a single indicator. It is important to keep in mind that high income alone does not guarantee a similar overall economic profile. The fact that Luxembourg also appears among the most distant illustrates an important point: the distance measure does not simply separate rich from poor economies. Very high shares of international trade can contribute to a distinctive economic profile.
 
 ### Interactive comparison: closest and most distant economies
 
@@ -689,7 +504,7 @@ These comparisons identify important contrasts in the observed indicators. **The
 
 ### Overall finding
 
-The three closest economies, Australia, Norway, and the United Kingdom, exhibit relatively similar combined profiles to the United States. Venezuela, Djibouti, and Hong Kong SAR show that **large distances can coexist with very different combinations of income, inflation, and international trade**. Economic distance should therefore not be interpreted as a ranking of economic development, institutional quality, or investment attractiveness.
+The key finding is that large economic distances can coexist with very different economic characteristics. Venezuela, Djibouti, and Hong Kong are not distant in the same observable way. Mahalanobis distance helps bring several correlated indicators into one comparison, but the score itself does not identify causes or exact indicator contributions. This study is also limited to one year and four indicators. The conclusion is therefore simple: use the distance to identify differences, then return to the underlying indicators to interpret what those differences mean.
 
 ### Limitations and sample
 
