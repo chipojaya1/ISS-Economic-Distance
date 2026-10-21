@@ -72,7 +72,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 
 from scipy.spatial import distance
-sns.set_theme(style="darkgrid", context="notebook")
+sns.set_theme(style="whitegrid", context="notebook")
 
 from scipy.spatial.distance import mahalanobis
 from IPython.display import display
@@ -96,6 +96,7 @@ wide.columns.name = None
 wide = wide.rename(columns={"Country Name":"country","Country Code":"iso3c"})
 complete = wide.dropna(subset=features).copy()
 plot_df = complete.copy()
+wdi_df = complete.copy()
 assert (complete["iso3c"] == "USA").sum() == 1
 print(f"Source rows: {len(raw)}; economies: {len(wide)}; complete cases: {len(complete)}")
 ```
@@ -125,14 +126,10 @@ display(complete[features].describe().T[
 
 ### GDP per capita — economic output per person
 
-**GDP per capita varied widely in 2019**
-
 *2019 | 182 economies with complete data | constant 2015 US$ per person*
 
 ```{python}
 #| label: distribution-gdp
-
-
 # Calculate summary metrics
 mean_val = plot_df["gdp_per_capita"].mean()
 median_val = plot_df["gdp_per_capita"].median()
@@ -143,7 +140,7 @@ fig = px.histogram(
     x="gdp_per_capita",
     nbins=28,
     color_discrete_sequence=["lightblue"],
-    title="GDP per capita varied widely in 2019"
+    title="<b>GDP per capita varied widely in 2019</b><br><sup>2019 | 182 economies with complete data | constant 2015 US$ per person</sup>"
 )
 
 # Customize layout and add vertical lines for mean/median
@@ -155,6 +152,10 @@ fig.update_layout(
     height=450,
     showlegend=False
 )
+
+# Add baseline axis lines
+fig.update_xaxes(showline=True, linewidth=0.1, linecolor='lightgray', mirror=True)
+fig.update_yaxes(showline=True, linewidth=0.1, linecolor='lightgray', mirror=True)
 
 # Add Mean Line
 fig.add_vline(
@@ -174,18 +175,12 @@ fig.add_vline(
     annotation_position="top left"
 )
 
-# Title and subtitle are displayed as page text above this chart.
-fig.update_layout(title=None, margin=dict(l=75, r=45, t=35, b=65))
-fig.update_xaxes(showline=True, linewidth=0.1, linecolor="lightgray", mirror=True)
-fig.update_yaxes(showline=True, linewidth=0.1, linecolor="lightgray", mirror=True)
 fig.show()
 ```
 
 GDP per capita varies greatly across economies. Most have relatively low economic output per person, while a much smaller group has considerably higher values. This difference highlights the unequal distribution of economic resources and productive capacity across the world.
 
 ### Inflation — how quickly prices were changing
-
-**How Inflation Rates Differed Across Economies**
 
 *2019 | economies within −10% to 30% are shown; all observations are retained in the analysis*
 
@@ -209,7 +204,7 @@ fig = px.histogram(
     x="inflation",
     nbins=25,
     color_discrete_sequence=["lightblue"],
-    title="How Inflation Rates Differed Across Economies"
+    title=f"<b>How Inflation Rates Differed Across Economies</b><br><sup>2019 | {len(inflation_visible)} of {len(plot_df)} economies shown ({inflation_display_min}% to {inflation_display_max}%)</sup>"
 )
 
 # Add vertical line for overall median
@@ -231,10 +226,10 @@ fig.update_layout(
     xaxis_range=[inflation_display_min, inflation_display_max]
 )
 
-# Title and subtitle are displayed as page text above this chart.
-fig.update_layout(title=None, margin=dict(l=75, r=45, t=35, b=65))
-fig.update_xaxes(showline=True, linewidth=0.1, linecolor="lightgray", mirror=True)
-fig.update_yaxes(showline=True, linewidth=0.1, linecolor="lightgray", mirror=True)
+# Add baseline axis lines
+fig.update_xaxes(showline=True, linewidth=0.1, linecolor='lightgray', mirror=True)
+fig.update_yaxes(showline=True, linewidth=0.1, linecolor='lightgray', mirror=True)
+
 fig.show()
 print(f"Note: {outside_count} of {len(plot_df)} economies fall outside the displayed range (-10% to 30%). All observations remain in the analysis.")
 ```
@@ -244,8 +239,6 @@ Most economies experienced relatively modest inflation in 2019. However, some ex
 The focused inflation chart excludes the extremes **from the display only**, not from any distance calculations.
 
 ### Imports — goods and services bought from abroad
-
-**How Much Economies Import Relative to Their Size**
 
 *2019 | imports of goods and services as a percentage of GDP*
 
@@ -260,7 +253,7 @@ fig = px.histogram(
     x="imports",
     nbins=24,
     color_discrete_sequence=["lightblue"],
-    title="How Much Economies Import Relative to Their Size"
+    title="<b>How Much Economies Import Relative to Their Size</b><br><sup>2019 | Imports of goods and services as a percentage of GDP</sup>"
 )
 
 # Add lines for mean and median
@@ -289,18 +282,16 @@ fig.update_layout(
     xaxis_range=[0, 220]
 )
 
-# Title and subtitle are displayed as page text above this chart.
-fig.update_layout(title=None, margin=dict(l=75, r=45, t=35, b=65))
-fig.update_xaxes(showline=True, linewidth=0.1, linecolor="lightgray", mirror=True)
-fig.update_yaxes(showline=True, linewidth=0.1, linecolor="lightgray", mirror=True)
+# Add baseline axis lines
+fig.update_xaxes(showline=True, linewidth=0.1, linecolor='lightgray', mirror=True)
+fig.update_yaxes(showline=True, linewidth=0.1, linecolor='lightgray', mirror=True)
+
 fig.show()
 ```
 
 Economies differ in how much they purchase from the rest of the world relative to the size of their economies. Some rely more heavily on international goods and services, while others import a smaller share of their GDP.
 
 ### Exports — goods and services sold abroad
-
-**How Much Economies Export Relative to Their Size**
 
 *2019 | exports of goods and services as a percentage of GDP*
 
@@ -315,7 +306,7 @@ fig = px.histogram(
     x="exports",
     nbins=24,
     color_discrete_sequence=["lightblue"],
-    title="How Much Economies Export Relative to Their Size"
+    title="<b>How Much Economies Export Relative to Their Size</b><br><sup>2019 | Exports of goods and services as a percentage of GDP</sup>"
 )
 
 # Add lines for mean and median
@@ -344,18 +335,16 @@ fig.update_layout(
     xaxis_range=[0, 220]
 )
 
-# Title and subtitle are displayed as page text above this chart.
-fig.update_layout(title=None, margin=dict(l=75, r=45, t=35, b=65))
-fig.update_xaxes(showline=True, linewidth=0.1, linecolor="lightgray", mirror=True)
-fig.update_yaxes(showline=True, linewidth=0.1, linecolor="lightgray", mirror=True)
+# Add baseline axis lines
+fig.update_xaxes(showline=True, linewidth=0.1, linecolor='lightgray', mirror=True)
+fig.update_yaxes(showline=True, linewidth=0.1, linecolor='lightgray', mirror=True)
+
 fig.show()
 ```
 
 Exports also vary considerably. Some economies sell a much larger share of their goods and services internationally than others. This illustrates differences in how strongly economies participate in international trade.
 
 ### How the indicators relate
-
-**How the Four Economic Indicators Relate**
 
 *Pearson correlations across four economic indicators, 2019*
 
@@ -378,7 +367,7 @@ fig = px.imshow(
     zmin=-1,
     zmax=1,
     text_auto=".2f",
-    title="How the Four Economic Indicators Relate"
+    title="<b>How the Four Economic Indicators Relate</b>"
 )
 
 # Update layout with formatting matching the style requirements
@@ -390,8 +379,6 @@ fig.update_layout(
     margin=dict(l=40, r=40, t=80, b=40)
 )
 
-# Title and subtitle are displayed as page text above this chart.
-fig.update_layout(title=None, margin=dict(l=40, r=40, t=35, b=40))
 fig.show()
 ```
 
@@ -417,9 +404,11 @@ Spearman focuses on ranks rather than the size of the values. It captures relati
 ```{python}
 #| label: spearman
 spearman_correlations = plot_df[cols].corr(method="spearman")
-print("Pearson correlations")
+
+print("Pearson correlations:")
 display(correlations.round(3))
-print("Spearman correlations")
+
+print("Spearman correlations:")
 display(spearman_correlations.round(3))
 ```
 
@@ -468,26 +457,40 @@ At the other end, **Venezuela, Djibouti, and Hong Kong SAR, China** have the gre
 
 ### Interactive comparison: closest and most distant economies
 
-The updated notebook presents two separate interactive charts to make the extremes easier to read. The United States is included as the zero-distance reference point in the closest-economies chart. Both charts reuse the distances calculated above rather than recalculating the covariance matrix.
+The final notebook displays the closest and most distant economies separately. 
+The chart code below follows the notebook, including its covariance calculation and reference vector.
 
 ```{python}
 #| label: distance-visual-selection
-import plotly.graph_objects as go
+X = plot_df[cols].to_numpy(dtype=float)
+cov_matrix = np.cov(X, rowvar=False)
+inverse_covariance = np.linalg.inv(cov_matrix)
 
-ranked_with_us = complete.sort_values("distance_us")
-near = ranked_with_us.head(6).copy()  # United States plus five closest economies
-far = ranked_with_us.tail(5).copy().sort_values("distance_us", ascending=True)
+# 2. Locate the United States reference values
+us_vector = plot_df.loc[
+    plot_df["country"] == "United States", cols
+].iloc[0].to_numpy(dtype=float)
+
+# 3. Compute distance metric mapping
+plot_df["distance_us"] = [
+    distance.mahalanobis(row, us_vector, inverse_covariance)
+    for row in X
+]
+
+# 4. Sort and select top/bottom 5 countries, including the US baseline
+ranked_plot = plot_df.sort_values("distance_us")
+near = ranked_plot.head(6) # US + 5 actual closest
+far = ranked_plot.tail(5) # 5 furthest
 ```
-
-**Economic Similarity: Closest Economies to the United States**
 
 *2019 | Mahalanobis distance based on GDP per capita, inflation, imports, and exports*
 
 ```{python}
 #| label: closest-economies-chart
-fig_near = go.Figure()
+# --- Visual 1: Closest Economies ---
+fig_closest = go.Figure()
 for _, row in near.iterrows():
-    fig_near.add_trace(go.Scatter(
+    fig_closest.add_trace(go.Scatter(
         x=[0, row["distance_us"]],
         y=[row["country"], row["country"]],
         mode="lines",
@@ -496,7 +499,7 @@ for _, row in near.iterrows():
         hoverinfo="skip"
     ))
 
-fig_near.add_trace(go.Scatter(
+fig_closest.add_trace(go.Scatter(
     x=near["distance_us"],
     y=near["country"],
     mode="markers+text",
@@ -506,29 +509,33 @@ fig_near.add_trace(go.Scatter(
     hovertemplate="<b>%{y}</b><br>Mahalanobis Distance: %{x:.2f}<extra></extra>",
     showlegend=False
 ))
-fig_near.update_layout(
-    title=None,
-    xaxis_title="Mahalanobis distance (lower = more similar)",
-    yaxis_title="Economy",
-    template="plotly_white",
-    height=390,
-    margin=dict(l=130, r=65, t=28, b=65),
-    xaxis=dict(showgrid=True, gridcolor="LightGray")
-)
-fig_near.update_xaxes(showline=True, linewidth=0.1, linecolor="lightgray", mirror=True)
-fig_near.update_yaxes(showline=True, linewidth=0.1, linecolor="lightgray", mirror=True)
-fig_near.show()
-```
 
-**Economic Dissimilarity: Most Distant Economies from the United States**
+fig_closest.update_layout(
+    title="Economic Similarity: Closest Economies to the United States",
+    xaxis_title="Mahalanobis distance<br><sup>(lower score = more similar)</sup>",
+    yaxis_title="Country",
+    template="plotly_white",
+    width=900,
+    height=350,
+    margin=dict(l=150, r=80, t=80, b=40),
+    xaxis=dict(showgrid=True, gridcolor='LightGray')
+)
+
+# Add baseline axis lines
+fig_closest.update_xaxes(showline=True, linewidth=0.1, linecolor='lightgray', mirror=True)
+fig_closest.update_yaxes(showline=True, linewidth=0.1, linecolor='lightgray', mirror=True)
+
+fig_closest.show()
+```
 
 *2019 | Mahalanobis distance based on GDP per capita, inflation, imports, and exports*
 
 ```{python}
 #| label: most-distant-economies-chart
-fig_far = go.Figure()
+# --- Visual 2: Most Distant Economies ---
+fig_distant = go.Figure()
 for _, row in far.iterrows():
-    fig_far.add_trace(go.Scatter(
+    fig_distant.add_trace(go.Scatter(
         x=[0, row["distance_us"]],
         y=[row["country"], row["country"]],
         mode="lines",
@@ -537,7 +544,7 @@ for _, row in far.iterrows():
         hoverinfo="skip"
     ))
 
-fig_far.add_trace(go.Scatter(
+fig_distant.add_trace(go.Scatter(
     x=far["distance_us"],
     y=far["country"],
     mode="markers+text",
@@ -547,18 +554,23 @@ fig_far.add_trace(go.Scatter(
     hovertemplate="<b>%{y}</b><br>Mahalanobis Distance: %{x:.2f}<extra></extra>",
     showlegend=False
 ))
-fig_far.update_layout(
-    title=None,
-    xaxis_title="Mahalanobis distance (higher = more distant)",
-    yaxis_title="Economy",
+
+fig_distant.update_layout(
+    title="Economic Dissimilarity: Furthest Countries from the United States",
+    xaxis_title="Mahalanobis distance<br><sup>(higher score = more distant)</sup>",
+    yaxis_title="Country",
     template="plotly_white",
-    height=390,
-    margin=dict(l=130, r=65, t=28, b=65),
-    xaxis=dict(showgrid=True, gridcolor="LightGray")
+    width=900,
+    height=350,
+    margin=dict(l=150, r=80, t=80, b=40),
+    xaxis=dict(showgrid=True, gridcolor='LightGray')
 )
-fig_far.update_xaxes(showline=True, linewidth=0.1, linecolor="lightgray", mirror=True)
-fig_far.update_yaxes(showline=True, linewidth=0.1, linecolor="lightgray", mirror=True)
-fig_far.show()
+
+# Add baseline axis lines
+fig_distant.update_xaxes(showline=True, linewidth=0.1, linecolor='lightgray', mirror=True)
+fig_distant.update_yaxes(showline=True, linewidth=0.1, linecolor='lightgray', mirror=True)
+
+fig_distant.show()
 ```
 
 These distances are relative comparisons, **not percentages or probabilities**. A score of 6 does not mean an economy is six times poorer, richer, or less developed than the United States.
@@ -567,7 +579,7 @@ These distances are relative comparisons, **not percentages or probabilities**. 
 
 The results depend on the four indicators selected, the economies with complete data, and the way extreme values influence the covariance calculation. Venezuela's unusually high 2019 inflation is especially important to consider. We cannot tell from the overall distance score alone exactly how much of a country's ranking is explained by each indicator.
 
-The next section checks how rankings change when extreme observations are treated differently. The analysis remains descriptive: it measures similarity in selected economic characteristics, not the causes of those differences.
+The analysis remains descriptive: it measures similarity in selected economic characteristics, not the causes of those differences.
 
 ## 5. Conclusion: Cross-country interpretation
 
