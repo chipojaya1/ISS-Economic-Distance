@@ -286,9 +286,10 @@ using Mahalanobis distance, a more robust measure of economic distance is obtain
 understanding the challenges faced by multinational companies in various economic environments.
 
 $$
-D(x,US)=\sqrt{(x-x_{US})^T S^{-1}(x-x_{US})}
+D(x,\mathrm{US}) =
+\sqrt{(x-x_{\mathrm{US}})^{T} S^{-1}(x-x_{\mathrm{US}})}
 $$
-
+  
 Here $S$ is the covariance matrix calculated from the same complete-case sample. The United States is the reference economy, so its distance from itself is zero. **Smaller distances indicate greater similarity to the United States across these four selected indicators; they do not imply better economic performance.**
 
 ### Which economies are most similar to or different from the United States?
