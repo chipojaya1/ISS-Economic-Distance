@@ -70,6 +70,7 @@ import matplotlib.ticker as ticker
 import matplotlib.patches as mpatches
 import plotly.express as px
 import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 
 from scipy.spatial import distance
 sns.set_theme(style="whitegrid", context="notebook")
@@ -144,7 +145,7 @@ fig = make_subplots(
         "<b>GDP per capita across Economies </b>",
         "<b>How Inflation Rates Differed Across Economies </b>",
         "<b>How Much Economies Import Relative to Their Size</b>",
-        "<b>How Much Economies Import Relative to Their Size</b>"
+        "<b>How Much Economies Export Relative to Their Size</b>"
     ),
     vertical_spacing=0.15,
     horizontal_spacing=0.1
